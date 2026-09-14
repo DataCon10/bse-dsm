@@ -1,0 +1,919 @@
+# Linear Algebra — Exam Reference
+
+*Mathematics for Machine Learning* (Deisenroth, Faisal & Ong) — Chapters 2–5 + applications
+
+---
+
+## 0. Notation
+
+| Symbol | Read as | Note |
+|---|---|---|
+| $x \in V$ | $x$ is an element of $V$ | membership |
+| $U \subseteq V$ | $U$ is a subset of $V$ | $\subset$ often means the same in this book |
+| $\forall$ / $\exists$ | for all / there exists | |
+| $\mathbb{R}^n$ | all lists of $n$ real numbers | a vector here has $n$ **components** |
+| $A \in \mathbb{R}^{n \times d}$ | matrix, $n$ rows, $d$ columns | rows first, always |
+| $A^\top$ | transpose | reflect across the diagonal; $(A^\top)_{ij} = A_{ji}$ |
+| $\langle x, y\rangle$ | inner product | $= x^\top y$ for the standard dot product |
+| $\|x\|$ | norm (length) of $x$ | $\|x\|_2$ unless stated |
+| $\text{span}(S)$ | all linear combinations of $S$ | always a subspace |
+| $\dim V$ | dimension | size of any basis |
+| $\ker(A)$ | kernel / null space | $\{x : Ax = \mathbf{0}\}$ |
+| $\text{im}(A)$ | image / column space / range | $\{Ax\}$ |
+| $U^\perp$ | orthogonal complement | everything perpendicular to $U$ |
+| $U \oplus W$ | direct sum | sum where $U \cap W = \{\mathbf{0}\}$ |
+| $\lambda$ | eigenvalue | |
+| $\mathbf{0}$ | zero vector | bold — distinct from scalar $0$ |
+| $I$ | identity matrix | $I_n$ if size matters |
+| $\blacksquare$ | end of proof | |
+
+**Vectors are columns by default.** $(1,2,3)^\top$ and $\begin{bmatrix}1\\2\\3\end{bmatrix}$ mean the same thing.
+
+---
+
+## 1. Vector Spaces and Subspaces
+
+### 1.1 Vector space
+
+$V = (\mathcal{V}, +, \cdot)$ — a set plus two operations that are **closed**: adding two vectors or scaling one never produces something outside the set.
+
+$$+ : \mathcal{V}\times\mathcal{V} \to \mathcal{V}, \qquad \cdot : \mathbb{R}\times\mathcal{V} \to \mathcal{V}$$
+
+**Eight axioms, grouped:**
+
+| Group | Axioms |
+|---|---|
+| $(\mathcal{V}, +)$ is an abelian group | associative · commutative · has $\mathbf{0}$ · every $x$ has $-x$ |
+| Scalars behave | $\lambda(x+y) = \lambda x + \lambda y$ · $(\lambda+\psi)x = \lambda x + \psi x$ · $\lambda(\psi x) = (\lambda\psi)x$ · $1\cdot x = x$ |
+
+> **Why axiomatised:** $\mathbb{R}^n$ isn't the only one. Matrices, polynomials, and functions all form vector spaces — so every theorem below transfers to them for free.
+
+### 1.2 Subspace
+
+$U \subseteq V$ is a subspace if it is closed under both operations. **Three-part test:**
+
+1. $\mathbf{0} \in U$ *(cheapest — check first)*
+2. $\lambda u \in U$ for all $\lambda \in \mathbb{R}, u \in U$
+3. $u + v \in U$ for all $u, v \in U$
+
+**Every subspace contains the origin.** A line or plane *not* through $\mathbf{0}$ is **affine**, not a subspace.
+
+> This is why PCA requires centring. A subspace is anchored at the origin; if your data cloud sits at $(50,200)$, the best subspace through the origin just recovers the mean vector instead of the shape.
+
+### 1.3 Combining subspaces
+
+Let $U, W$ be subspaces of $V$.
+
+| Operation | Subspace? | Why |
+|---|---|---|
+| $U \cap W$ (**AND**) | ✅ always | if $u,w$ satisfy both conditions, so does $u+w$ |
+| $U \cup W$ (**OR**) | ❌ generally **not** | only if $U \subseteq W$ or $W \subseteq U$ |
+| $U + W = \{u + w\}$ | ✅ always | $= \text{span}(U \cup W)$ — the proper fix |
+
+**Counterexample for the union.** In $\mathbb{R}^2$, let $U$ = x-axis, $W$ = y-axis. Then $(1,0) \in U$ and $(0,1) \in W$ are both in $U \cup W$, but
+
+$$(1,0) + (0,1) = (1,1)$$
+
+is on neither axis. Additive closure fails.
+
+```
+   y
+ 2 │  ·   ·   █   ·   ·      █ = in U ∪ W
+ 1 │  ·   ·   w━━━?   ·      ? = (1,1), NOT in the union
+   │          ┃   ┃
+ 0 │  █   █   O━━━u   █
+-1 │  ·   ·   █   ·   ·
+   └────────────────────→ x
+     -2  -1   0   1   2
+```
+
+A union gives you the points of both pieces but nothing in the gap between them. Addition walks you straight into that gap.
+
+**Direct sum** $U \oplus W$: a sum where $U \cap W = \{\mathbf{0}\}$. Then every vector splits **uniquely** into a $U$-part and a $W$-part.
+
+---
+
+## 2. Span, Independence, Basis, Dimension
+
+### 2.1 Span
+
+$$\text{span}\{v_1,\ldots,v_k\} = \left\{ \sum_{i} c_i v_i \;:\; c_i \in \mathbb{R} \right\}$$
+
+Everything reachable by scaling and adding. Always a subspace.
+
+### 2.2 Linear independence
+
+$$\sum_i c_i v_i = \mathbf{0} \;\Longrightarrow\; \text{all } c_i = 0$$
+
+The trivial solution always exists. **Independent** means it's the *only* one.
+
+**What it means:** each vector contributes a genuinely new direction. **Dependent** means at least one is redundant — reachable from the others.
+
+Rearranging shows why the definition avoids naming a culprit:
+
+$$1v_1 + 1v_2 - 1v_3 = \mathbf{0} \iff v_3 = v_1 + v_2$$
+
+**Instant checks — do these before any arithmetic:**
+
+| Situation | Verdict |
+|---|---|
+| Set contains $\mathbf{0}$ | dependent, always |
+| Two vectors, one a multiple of the other | dependent |
+| More vectors than dimensions ($k > n$) | dependent, guaranteed |
+
+**Geometrically:** 2 independent vectors aren't collinear; 3 independent vectors in $\mathbb{R}^3$ aren't coplanar — they enclose real volume, so $\det \neq 0$.
+
+> **Your version:** linear dependence *is* multicollinearity. A dependent column is one your other columns already reconstruct (`total = subtotal + tax`), which makes $X^\top X$ singular and the coefficients unidentifiable.
+
+### 2.3 Basis and dimension
+
+**Basis** = spans **and** independent. Equivalently: *minimal* spanning set, or *maximal* independent set.
+
+$\dim V$ = number of vectors in **any** basis — all bases of the same space have the same size. Read it as **the required headcount for a basis**.
+
+**Counting rule for $k$ vectors in an $n$-dimensional space:**
+
+| | Verdict |
+|---|---|
+| $k < n$ | cannot span → not a basis |
+| $k > n$ | must be dependent → not a basis |
+| $k = n$ | possible → check rank |
+
+Do this first; it's free and settles most questions.
+
+**Two one-directional effects.** Adding a vector to a set:
+- **span** — can only grow or stay the same, never shrink
+- **independence** — can only be lost, never gained
+
+A basis is the exact balance point.
+
+**Uniqueness of coordinates.** If $B$ is a basis, every $v$ has exactly **one** representation. With a merely spanning set, representations are non-unique — like a table with no primary key.
+
+### 2.4 Coordinate vectors
+
+$$v = c_1 b_1 + \cdots + c_n b_n \qquad\Longrightarrow\qquad [v]_B = \begin{bmatrix} c_1 \\ \vdots \\ c_n\end{bmatrix}$$
+
+**To compute:** basis vectors as columns of $A$, then solve $Ac = v$ — augment $[A \mid v]$ and reduce to RREF.
+
+> $(4,-1,2)$ is *already* a coordinate vector, with respect to the standard basis. Coordinates are always relative to some basis; the standard one is just so default nobody mentions it.
+
+---
+
+## 3. Matrices and Systems
+
+### 3.1 Matrix multiplication — two readings
+
+**Row · column:** $\;(AB)_{ij} = \sum_k A_{ik}B_{kj}$
+
+**Linear combination of columns** — the one that matters here:
+
+$$A\beta = \begin{bmatrix} a_1 & \cdots & a_d\end{bmatrix}\begin{bmatrix}\beta_1\\ \vdots \\ \beta_d\end{bmatrix} = \sum_i \beta_i a_i$$
+
+$A\beta$ is *always* a linear combination of $A$'s columns with weights $\beta$. This single fact explains why $\text{im}(A) = \text{span}\{\text{columns}\}$.
+
+**Shape rule:** $(m\times n)(n\times p) = (m \times p)$ — inner dimensions must match.
+
+### 3.2 Transpose and inverse
+
+| Rule | |
+|---|---|
+| $(A^\top)^\top = A$ | |
+| $(AB)^\top = B^\top A^\top$ | **order reverses** |
+| $(AB)^{-1} = B^{-1}A^{-1}$ | order reverses |
+| $(A^\top)^{-1} = (A^{-1})^\top$ | |
+| $A$ symmetric | $A = A^\top$ |
+
+**Trap:** $(X^\top X)^{-1} \neq X^{-1}(X^\top)^{-1}$ when $X$ isn't square. $X$ has no inverse at all.
+
+$$\begin{bmatrix} a & b \\ c & d\end{bmatrix}^{-1} = \frac{1}{ad-bc}\begin{bmatrix} d & -b \\ -c & a\end{bmatrix}$$
+
+### 3.3 Row operations
+
+Only **three** are legal, and only on **rows**:
+
+1. Swap $R_i \leftrightarrow R_j$
+2. Scale $cR_i$, $c \neq 0$
+3. Add $R_i + cR_j$
+
+**Never column operations.** Columns are variables; rows are equations. Scaling a column silently substitutes $x \to cx$ and changes the problem.
+
+**Why it works.** Each row operation is left-multiplication by an invertible elementary matrix, so $R = MA$ with $M$ invertible. Hence
+
+$$Ax = \mathbf{0} \iff MAx = \mathbf{0} \iff Rx = \mathbf{0}$$
+
+Identical solution set, and identical **dependency relations among the columns** — which is exactly why pivot positions transfer back to the original matrix.
+
+| Preserved by row ops? | |
+|---|---|
+| kernel, column **dependencies**, rank, row space | ✅ |
+| **column space (image)** | ❌ changes |
+| determinant | ⚠️ scales predictably |
+
+That ❌ is why image bases use the **original** columns.
+
+### 3.4 REF and RREF
+
+**REF** — staircase: zeros below every pivot, pivots step right, zero rows at the bottom.
+
+**RREF** — additionally: every pivot is $1$, and zeros **above** the pivots too. RREF is **unique**; REF is not.
+
+$$\text{REF: }\begin{bmatrix} \mathbf 1 & 2 & 3 \\ 0 & \mathbf 5 & 6 \\ 0 & 0 & \mathbf 8\end{bmatrix} \qquad \text{RREF: }\begin{bmatrix} \mathbf 1 & 0 & 0 \\ 0 & \mathbf 1 & 0 \\ 0 & 0 & \mathbf 1\end{bmatrix}$$
+
+**Strategy**
+
+*Pass 1 (down):* left to right, pick a pivot, swap it into place, clear **below**.
+*Pass 2 (up):* right to left, clear **above** each pivot, then scale pivots to $1$.
+
+**Tips that cut errors:**
+- **Delay fractions.** Don't normalise pivots to $1$ during pass 1; clear with integer combinations like $3R_2 - 2R_1$. Normalise at the end.
+- **Hunt for a $1$** and swap it up — clearing with a $1$ needs no scaling.
+- **Scale pivots before clearing above** — then the multiplier is just the entry you're killing.
+- **Never modify the pivot row you're clearing with.**
+- Write the operation beside each row as you go.
+
+**REF → RREF:** scale each pivot to $1$, then clear above, working bottom-up (those rows have the most zeros, so less arithmetic).
+
+**Free columns need no zeros.** Only *pivot* columns get cleared. Leftover entries in a free column are the information you need for the kernel.
+
+**When to stop:**
+
+| Goal | Form |
+|---|---|
+| rank, independence, basis check, determinant | **REF** |
+| kernel basis, coordinate vector, inverse | **RREF** |
+| image basis | **REF** |
+
+---
+
+## 4. Rank, Kernel, Image
+
+For $A \in \mathbb{R}^{n\times d}$ representing $\Phi: \mathbb{R}^d \to \mathbb{R}^n$.
+
+### 4.1 Definitions
+
+| | $\ker(A)$ | $\text{im}(A)$ |
+|---|---|---|
+| **Definition** | $\{x : Ax = \mathbf{0}\}$ | $\{Ax\} = \text{span}(\text{columns})$ |
+| **Lives in** | $\mathbb{R}^d$ — **input** side | $\mathbb{R}^n$ — **output** side |
+| **Also called** | null space | column space, range |
+| **From the REF** | **free** columns | **pivot** columns |
+| **Basis** | parametrise free vars | those columns **of the ORIGINAL** |
+| **Dimension** | nullity $= d - \text{rank}$ | rank $=$ #pivots |
+
+They live in **different spaces** — the most common confusion.
+
+$$\text{rank}(A) = \#\text{pivots} = \dim\text{im}(A) = \text{column rank} = \text{row rank}$$
+
+$$\text{rank}(A) \le \min(n, d)$$
+
+### 4.2 Rank–nullity
+
+$$\boxed{\;\text{rank}(A) + \dim\ker(A) = d \;(\#\text{columns})\;}$$
+
+Every input dimension is either preserved (into the image) or crushed (into the kernel). The pivot/free split of the columns *is* this theorem.
+
+### 4.3 Procedure — one reduction answers both
+
+1. Reduce to REF
+2. Count pivots → rank → $\dim\text{im}$
+3. $\dim\ker = d - \text{rank}$ — **do this before computing the basis**, so you know how many vectors to expect
+4. **Image basis** = pivot columns, taken from the **original** matrix
+5. **Kernel basis** — continue to RREF, then for each free variable: set it to $1$, other free variables to $0$, fill in the basic variables from the rows
+6. Check: kernel vector count matches step 3, and $Av = \mathbf{0}$ for each
+
+### 4.4 Worked example
+
+$$A = \begin{bmatrix} 1 & 2 & 1 & 7 \\ 2 & 4 & 3 & 18\end{bmatrix} \xrightarrow{R_2 - 2R_1} \begin{bmatrix} 1 & 2 & 1 & 7 \\ 0 & 0 & 1 & 4\end{bmatrix} \xrightarrow{R_1 - R_2} \begin{bmatrix} \mathbf 1 & 2 & 0 & 3 \\ 0 & 0 & \mathbf 1 & 4\end{bmatrix}$$
+
+Pivots in columns 1, 3 → rank $= 2$. Free: $x_2, x_4$ → $\dim\ker = 4 - 2 = 2$.
+
+**Image** — columns 1 and 3 of the **original**:
+
+$$\text{im}(A) = \text{span}\left\{\begin{bmatrix}1\\2\end{bmatrix}, \begin{bmatrix}1\\3\end{bmatrix}\right\} = \mathbb{R}^2$$
+
+**Kernel** — rows give $x_1 = -2x_2 - 3x_4$ and $x_3 = -4x_4$:
+
+| | $x_1$ | $x_2$ | $x_3$ | $x_4$ |
+|---|---|---|---|---|
+| $x_2=1, x_4=0$ | $-2$ | $\mathbf 1$ | $0$ | $\mathbf 0$ |
+| $x_2=0, x_4=1$ | $-3$ | $\mathbf 0$ | $-4$ | $\mathbf 1$ |
+
+$$\ker(A) = \text{span}\left\{\begin{bmatrix}-2\\1\\0\\0\end{bmatrix}, \begin{bmatrix}-3\\0\\-4\\1\end{bmatrix}\right\}$$
+
+Check: $2 + 2 = 4$ ✓ and $A(-2,1,0,0)^\top = \mathbf{0}$ ✓
+
+> **Why set the free variable to 1?** It's a *parametrisation*. Setting $x_4 = t$ gives all solutions; factoring $t$ out leaves the direction vector. $t=1$ is just the tidiest representative — $t=2$ spans the identical line. The 1/0 pattern across the free slots also guarantees the basis vectors are independent.
+
+> **A kernel vector is a recipe for a redundant column.** If $(-1,-1,1)^\top \in \ker$, then $-c_1 - c_2 + c_3 = \mathbf{0}$, i.e. $c_3 = c_1 + c_2$. Trivial kernel ⟺ no redundancy ⟺ independent columns.
+
+### 4.5 Injective, surjective, bijective
+
+| | Condition | Check in REF | Shape needed |
+|---|---|---|---|
+| **Injective** (1-to-1) | $\ker = \{\mathbf{0}\}$, rank $=d$ | every **column** has a pivot — no free columns | $n \ge d$ |
+| **Surjective** (onto) | $\text{im} = \mathbb{R}^n$, rank $=n$ | every **row** has a pivot — no zero rows | $d \ge n$ |
+| **Bijective** | both | square + invertible | $n = d$ |
+
+Same reduction, read two ways: **columns for injective, rows for surjective.**
+
+**Shape limits are free information.** Tall ($n>d$) can **never** be surjective; wide ($d>n$) can **never** be injective. State this before computing.
+
+**Why $\ker = \{\mathbf{0}\}$ forces injectivity.** Suppose two inputs collide:
+
+$$Ax_1 = Ax_2 \implies A(x_1 - x_2) = \mathbf{0} \implies x_1 - x_2 \in \ker(A)$$
+
+If the kernel is trivial, $x_1 = x_2$ — no collision was possible. Conversely, if $v \neq \mathbf{0}$ is in the kernel then $A(x+v) = Ax$ for **every** $x$, so one collision generates collisions everywhere.
+
+> **Linearity is what makes this cheap.** For an arbitrary function you'd have to check every pair of inputs. For a linear map, collisions are uniform across the domain, so inspecting a single point — the origin — settles injectivity globally.
+
+### 4.6 The master equivalence chain
+
+For a **square** $A \in \mathbb{R}^{n\times n}$, all of the following are the same statement:
+
+$$\text{invertible} \iff \det A \neq 0 \iff \text{rank} = n \iff n \text{ pivots}$$
+$$\iff \ker(A) = \{\mathbf{0}\} \iff \text{columns independent} \iff \text{columns form a basis of } \mathbb{R}^n$$
+$$\iff \text{bijective} \iff Ax = b \text{ has a unique solution } \forall b \iff \text{no eigenvalue } \lambda = 0$$
+
+**The single highest-value fact on this sheet.** Exam questions hand you one link and ask for another.
+
+---
+
+## 5. Norms and Inner Products
+
+### 5.1 Norm
+
+A function taking one vector to a single number $\ge 0$ — its **length**. Three axioms:
+
+1. $\|x\| = 0 \iff x = \mathbf{0}$
+2. $\|\lambda x\| = |\lambda|\,\|x\|$ (absolutely homogeneous)
+3. $\|x + y\| \le \|x\| + \|y\|$ (triangle inequality)
+
+| Norm | Formula | For $(3,4)$ | Meaning |
+|---|---|---|---|
+| $\|x\|_1$ | $\sum_i \lvert x_i\rvert$ | $7$ | Manhattan / city grid |
+| $\|x\|_2$ | $\sqrt{\sum_i x_i^2}$ | $5$ | Euclidean, straight line |
+| $\|x\|_\infty$ | $\max_i \lvert x_i\rvert$ | $4$ | largest component |
+
+$\|x\|$ with no subscript means $\|x\|_2$.
+
+**Unit balls** $\{x : \|x\| = 1\}$ in $\mathbb{R}^2$ — all three cross the axes at $(\pm1,0),(0,\pm1)$; they differ on the **diagonal**:
+
+```
+        L∞ : square, corners at (±1,±1)
+     ┌───────────────┐
+     │   ╭───────╮   │   L2 : circle, radius 1
+     │  ╱    ╱╲   ╲  │        diagonal hits at 1/√2 ≈ 0.707
+     │ │   ╱    ╲  │ │
+     │ │  ╱  L1  ╲ │ │   L1 : diamond |x|+|y|=1
+     │ │  ╲      ╱ │ │        diagonal hits at 0.5
+     │  ╲  ╲  ╱  ╱  │
+     │   ╰───────╯   │
+     └───────────────┘
+```
+
+$$\|x\|_\infty \le \|x\|_2 \le \|x\|_1 \quad\Longrightarrow\quad B_1 \subseteq B_2 \subseteq B_\infty$$
+
+*Larger norm value ⟹ smaller vector needed to reach 1 ⟹ tighter ball.*
+
+> $L_2$ on residuals gives least squares and RMSE. Penalising $\|\beta\|_2$ is Ridge; penalising $\|\beta\|_1$ is Lasso. Lasso produces sparse coefficients because the $L_1$ ball has **corners** on the axes, and a constraint region with corners tends to be touched at a corner — where some coordinates are exactly zero.
+
+### 5.2 Inner product
+
+Standard dot product:
+
+$$\langle x, y\rangle = x^\top y = \sum_i x_i y_i$$
+
+General form: $\langle x,y\rangle = x^\top A y$ for symmetric positive definite $A$. Must be **symmetric**, **bilinear** and **positive definite** ($\langle x,x\rangle > 0$ for $x \neq \mathbf{0}$).
+
+Every inner product induces a norm: $\;\|x\| = \sqrt{\langle x,x\rangle}$.
+
+### 5.3 Angles and Cauchy–Schwarz
+
+$$\langle x,y\rangle = \|x\|\,\|y\|\cos\theta \qquad\Longrightarrow\qquad \cos\theta = \frac{\langle x,y\rangle}{\|x\|\,\|y\|}$$
+
+$$\textbf{Cauchy–Schwarz: } \quad |\langle x,y\rangle| \le \|x\|\,\|y\|$$
+
+Equality **iff** $x$ and $y$ are linearly dependent (parallel). Equality without the absolute value requires the *same* direction, $\theta = 0$.
+
+| $\langle x,y\rangle$ | Angle |
+|---|---|
+| $> 0$ | acute |
+| $= 0$ | orthogonal |
+| $< 0$ | obtuse |
+
+**Cosine similarity** is exactly $\cos\theta$. If vectors are pre-normalised to unit length, it collapses to the plain dot product — which is why vector databases L2-normalise embeddings on write.
+
+> **Trap:** $\|x\| = \|y\|$ does **not** imply $\langle x,y\rangle = \|x\|\|y\|$. Equal *length* says nothing about *direction*. Counterexample: $(1,0)$ and $(0,1)$ both have norm 1 but inner product 0. Every normalised embedding in an index has norm 1, yet similarities span $[-1,1]$.
+
+### 5.4 Orthogonality
+
+$$x \perp y \iff \langle x,y\rangle = 0$$
+
+$\mathbf{0}$ is orthogonal to everything. The algebraic definition is the official one — it works in $\mathbb{R}^{300}$ and for functions, where "perpendicular" means nothing visually.
+
+**Key consequences:**
+
+- **Orthogonal ⟹ independent** (for non-zero vectors) — independence for free, no row reduction
+- **Pythagoras:** $x \perp y \implies \|x+y\|^2 = \|x\|^2 + \|y\|^2$
+- **Orthonormal basis** (orthogonal + unit length) makes coordinates trivial:
+
+$$v = \sum_i \langle v, e_i\rangle e_i$$
+
+Each coordinate is just a dot product — no linear system to solve.
+
+**Orthogonal matrix**: square, orthonormal columns.
+
+$$Q^\top Q = I \quad\Longrightarrow\quad Q^{-1} = Q^\top$$
+
+| Property | |
+|---|---|
+| $\|Qx\| = \|x\|$ | lengths preserved |
+| $\langle Qx, Qy\rangle = \langle x,y\rangle$ | angles preserved |
+| $\det Q = \pm 1$ | volume preserved |
+
+Geometrically: exactly the rotations and reflections. Numerically prized because they don't amplify error.
+
+**Orthogonal complement**
+
+$$U^\perp = \{v : \langle v,u\rangle = 0 \;\forall u \in U\}$$
+
+Always a subspace, and
+
+$$V = U \oplus U^\perp, \qquad \dim U + \dim U^\perp = \dim V$$
+
+### 5.5 Rotation matrix
+
+$$R(\theta) = \begin{bmatrix}\cos\theta & -\sin\theta \\ \sin\theta & \cos\theta\end{bmatrix}$$
+
+$$R(\theta_1)R(\theta_2) = R(\theta_1+\theta_2), \qquad R(0) = I, \qquad R(\theta)^{-1} = R(-\theta) = R(\theta)^\top$$
+
+Proofs use $\cos(\alpha+\beta) = \cos\alpha\cos\beta - \sin\alpha\sin\beta$, $\;\sin(\alpha+\beta) = \sin\alpha\cos\beta + \cos\alpha\sin\beta$, and the parities $\cos(-\theta) = \cos\theta$, $\sin(-\theta) = -\sin\theta$.
+
+> For $R^{-1} = R(-\theta)$, don't compute an inverse — set $\theta_2 = -\theta_1$ in the composition rule and use $R(0) = I$.
+
+---
+
+## 6. Projections
+
+### 6.1 Onto a line spanned by $b$
+
+$$\pi_U(x) = \frac{\langle b,x\rangle}{\|b\|^2}\,b, \qquad P = \frac{bb^\top}{b^\top b}$$
+
+### 6.2 Onto a subspace with basis columns $B$
+
+$$\pi_U(x) = B(B^\top B)^{-1}B^\top x, \qquad P = B(B^\top B)^{-1}B^\top$$
+
+Coordinates of the projection: $\;\beta = (B^\top B)^{-1}B^\top x$.
+
+### 6.3 The defining condition
+
+The closest point in $U$ is the one whose **residual is orthogonal to $U$**:
+
+$$y = \underbrace{\hat y}_{\in\, U} + \underbrace{r}_{\in\, U^\perp}, \qquad r = y - \hat y$$
+
+```
+        y
+        ↑╲
+        │ ╲  r = y - ŷ   ∈ U⊥
+        │  ╲
+   ─────┴───●──────────  U
+            ŷ
+```
+
+"Closest" and "perpendicular residual" are the **same condition**.
+
+**Checking orthogonality to a whole subspace** only requires the spanning vectors:
+
+$$\langle u, r\rangle = \left\langle \sum_j c_j x_j, r\right\rangle = \sum_j c_j\underbrace{\langle x_j, r\rangle}_{=0} = 0$$
+
+**Properties of any projection matrix:**
+
+| | |
+|---|---|
+| $P^\top = P$ | symmetric |
+| $P^2 = P$ | idempotent — projecting twice changes nothing |
+| eigenvalues | only $0$ and $1$ |
+| $\text{rank}(P) = \dim U$ | $= \text{trace}(P)$ |
+
+### 6.4 Gram–Schmidt
+
+Turns any basis $\{v_1,\ldots,v_k\}$ into an orthogonal one spanning the same subspace:
+
+$$u_1 = v_1, \qquad u_k = v_k - \sum_{j<k} \frac{\langle v_k, u_j\rangle}{\langle u_j,u_j\rangle}\,u_j$$
+
+Then normalise: $e_i = u_i / \|u_i\|$.
+
+*Subtract off what's already accounted for, keep the remainder.* Formalised as the **QR decomposition** $A = QR$ — how `lstsq` actually solves regression, being more stable than inverting $X^\top X$.
+
+---
+
+## 7. Determinant and Trace
+
+### 7.1 Determinant
+
+A single number from a **square** matrix: the **volume scaling factor** of the transformation.
+
+$$\det\begin{bmatrix} a & b \\ c & d\end{bmatrix} = ad - bc$$
+
+**3×3 (cofactor expansion along the top row):**
+
+$$\det\begin{bmatrix} a & b & c \\ d & e & f \\ g & h & i\end{bmatrix} = a(ei - fh) - b(di - fg) + c(dh - eg)$$
+
+Expand along whichever row or column has the most zeros. Signs alternate $\begin{smallmatrix}+&-&+\\-&+&-\\+&-&+\end{smallmatrix}$.
+
+**Triangular matrix:** $\det = \prod (\text{diagonal})$. So reduce to REF and multiply the diagonal — usually fastest for $4\times4$ and above, where cofactor expansion explodes.
+
+**Row operations change it predictably:**
+
+| Operation | Effect on $\det$ |
+|---|---|
+| swap two rows | $\times(-1)$ |
+| scale a row by $c$ | $\times c$ |
+| add a multiple of a row to another | **unchanged** |
+
+**Properties**
+
+$$\det(AB) = \det A \det B, \qquad \det(A^\top) = \det A, \qquad \det(A^{-1}) = \frac{1}{\det A}, \qquad \det(\lambda A) = \lambda^n \det A$$
+
+| $\det A$ | Meaning |
+|---|---|
+| $\neq 0$ | invertible, columns independent, full rank |
+| $= 0$ | **singular** — space collapsed to a lower dimension |
+| $< 0$ | orientation flipped (reflection) |
+| $= 1$ | volume preserved (e.g. rotations) |
+
+```
+  det ≠ 0                 det = 0
+    ╱─────╱                   ↗
+   ╱     ╱                  ↗        both vectors
+  ●─────→                 ●───→      on one line
+  real area               zero area
+```
+
+### 7.2 Trace
+
+$$\text{trace}(A) = \sum_i A_{ii}$$
+
+$$\text{trace}(A+B) = \text{trace}(A) + \text{trace}(B), \qquad \text{trace}(AB) = \text{trace}(BA)$$
+
+---
+
+## 8. Eigenvalues and Eigenvectors
+
+### 8.1 Definition
+
+$$Av = \lambda v, \qquad v \neq \mathbf{0}$$
+
+A matrix is a **transformation**. Most vectors get rotated *and* stretched. An **eigenvector** is a direction that is only **stretched** — never rotated. $\lambda$ is the stretch factor.
+
+```
+  generic vector            eigenvector
+     ↗ Av                      ↗ Av
+    ╱                         ╱
+   ╱  ↗ v                    ╱ ↗ v      same line,
+  ╱ ╱                       ╱╱          just rescaled
+ O                         O
+```
+
+> "Eigen" is German for *own* / *characteristic* — the matrix's own directions.
+
+### 8.2 Finding them
+
+$$Av = \lambda v \implies (A - \lambda I)v = \mathbf{0}$$
+
+A non-zero $v$ exists only if $A - \lambda I$ is **singular**:
+
+$$\boxed{\det(A - \lambda I) = 0} \quad\text{— the characteristic polynomial}$$
+
+*($I$ is needed because you cannot subtract a scalar from a matrix.)*
+
+Then for each root $\lambda$, solve $(A - \lambda I)v = \mathbf{0}$ — a kernel computation.
+
+**For 2×2, skip the expansion:**
+
+$$\lambda^2 - \text{trace}(A)\,\lambda + \det(A) = 0$$
+
+### 8.3 The two shortcuts
+
+$$\det(A) = \prod_i \lambda_i \qquad\qquad \text{trace}(A) = \sum_i \lambda_i$$
+
+Use these as an arithmetic check on **every** eigenvalue computation.
+
+*Why $\det = \prod\lambda_i$:* eigenvalues are the stretch factors along the eigen-directions, and total volume change is the product of the stretches. A zero eigenvalue crushes a direction → zero volume → singular.
+
+### 8.4 Worked example
+
+$$A = \begin{bmatrix} 4 & 2 \\ 1 & 3\end{bmatrix}, \qquad \text{trace} = 7, \quad \det = 12 - 2 = 10$$
+
+$$\lambda^2 - 7\lambda + 10 = 0 \implies \lambda = 2,\; 5$$
+
+**For $\lambda = 5$:** $\;A - 5I = \begin{bmatrix}-1 & 2\\ 1 & -2\end{bmatrix} \implies -x + 2y = 0 \implies v_1 = \begin{bmatrix}2\\1\end{bmatrix}$
+
+**For $\lambda = 2$:** $\;A - 2I = \begin{bmatrix}2 & 2\\ 1 & 1\end{bmatrix} \implies x + y = 0 \implies v_2 = \begin{bmatrix}1\\-1\end{bmatrix}$
+
+Check: $2 \cdot 5 = 10 = \det$ ✓ and $2 + 5 = 7 = \text{trace}$ ✓
+
+### 8.5 Eigenspace and multiplicity
+
+$$E_\lambda = \{v : Av = \lambda v\} = \ker(A - \lambda I)$$
+
+A **subspace** — eigenvectors for the same $\lambda$ are closed under addition and scaling, so you describe the whole space rather than individual vectors. ($E_\lambda$ contains $\mathbf{0}$, but $\mathbf{0}$ is not an eigenvector.)
+
+| | Meaning |
+|---|---|
+| **Algebraic multiplicity** | how many times $\lambda$ repeats as a root |
+| **Geometric multiplicity** | $\dim E_\lambda$ — how many independent eigenvectors you actually get |
+
+$$1 \le \text{geometric} \le \text{algebraic}$$
+
+**When they differ** — the shear $\begin{bmatrix}2&1\\0&2\end{bmatrix}$ has $(2-\lambda)^2$, so $\lambda=2$ algebraically twice; but $(A-2I)v = \mathbf{0}$ forces $v_2 = 0$, giving only a **1**-dimensional eigenspace. Such a matrix is **defective** and has no eigendecomposition.
+
+### 8.6 Diagonalization
+
+If $A$ ($n\times n$) has $n$ independent eigenvectors — put them in the columns of $P$, eigenvalues on the diagonal of $D$:
+
+$$A = PDP^{-1}, \qquad A^k = PD^kP^{-1}$$
+
+Read right to left as a pipeline: $P^{-1}$ translates into eigen-coordinates, $D$ scales each axis independently, $P$ translates back.
+
+$D^k$ is just $\lambda_i^k$, which is why eigenvalues govern long-run behaviour: $|\lambda|>1$ explodes, $|\lambda|<1$ decays.
+
+**Diagonalizable ⟺ geometric multiplicities sum to $n$.**
+
+### 8.7 Spectral theorem — the case ML cares about
+
+If $A = A^\top$ (**symmetric**):
+
+- all eigenvalues are **real**
+- eigenvectors for distinct eigenvalues are **orthogonal**
+- always diagonalizable, with $P$ **orthogonal**
+
+$$A = PDP^\top \qquad (P^{-1} = P^\top)$$
+
+**Covariance matrices are always symmetric**, so all of this applies automatically — symmetric matrices are never defective, and PCA never hits the defectiveness problem.
+
+### 8.8 Definiteness
+
+For symmetric $A$, judged by the sign of the eigenvalues (equivalently the sign of $x^\top A x$):
+
+| All $\lambda_i$ | Name | Meaning |
+|---|---|---|
+| $> 0$ | positive definite | invertible, defines a valid inner product, bowl-shaped |
+| $\ge 0$ | positive semi-definite | every covariance matrix; some directions have zero variance |
+| mixed | indefinite | saddle point |
+| $< 0$ | negative definite | dome-shaped |
+
+Applied to the **Hessian**, this is the second-derivative test: minimum / maximum / saddle.
+
+**Cholesky.** Every symmetric positive definite $A$ factors as $A = LL^\top$ with $L$ lower triangular and positive diagonal. The matrix analogue of a square root; used for efficient solving and for sampling multivariate Gaussians.
+
+---
+
+## 9. Singular Value Decomposition
+
+Eigendecomposition needs a square, non-defective matrix. **SVD works on any $A \in \mathbb{R}^{n\times d}$.**
+
+$$A = U\Sigma V^\top$$
+
+| Factor | Shape | Contents |
+|---|---|---|
+| $U$ | $n\times n$ | **orthogonal**; left singular vectors = eigenvectors of $AA^\top$ |
+| $\Sigma$ | $n\times d$ | diagonal, $\sigma_1 \ge \sigma_2 \ge \cdots \ge 0$ |
+| $V$ | $d\times d$ | **orthogonal**; right singular vectors = eigenvectors of $A^\top A$ |
+
+$$\sigma_i = \sqrt{\lambda_i(A^\top A)}$$
+
+**Facts**
+
+- $\text{rank}(A) = $ number of non-zero singular values
+- always exists — for *every* matrix, no conditions
+- geometric reading: **rotate ($V^\top$) → scale ($\Sigma$) → rotate ($U$)**
+- for symmetric positive definite $A$, SVD and eigendecomposition coincide
+
+**Low-rank approximation (Eckart–Young).** Truncating to the largest $k$ singular values,
+
+$$A_k = \sum_{i=1}^{k}\sigma_i u_i v_i^\top$$
+
+is the **best possible** rank-$k$ approximation of $A$ in both the spectral and Frobenius norms. This is the theorem behind PCA, image compression, and latent semantic analysis.
+
+---
+
+## 10. Vector Calculus
+
+### 10.1 ⚠️ Layout convention
+
+**MML uses numerator layout.** For $f: \mathbb{R}^n \to \mathbb{R}$, the gradient
+
+$$\nabla_x f = \frac{\mathrm{d}f}{\mathrm{d}x} = \begin{bmatrix}\dfrac{\partial f}{\partial x_1} & \cdots & \dfrac{\partial f}{\partial x_n}\end{bmatrix} \in \mathbb{R}^{1\times n}$$
+
+is a **row** vector. Most ML blogs and deep-learning texts use denominator layout, where it's a column. **Follow the textbook** — but expect transposes to look "backwards" versus other sources. If a shape doesn't match, suspect the convention before suspecting the maths.
+
+### 10.2 Shapes
+
+| Object | For | Shape | Entries |
+|---|---|---|---|
+| Partial derivative | $f:\mathbb{R}^n\to\mathbb{R}$ | scalar | $\partial f/\partial x_i$ |
+| **Gradient** $\nabla f$ | $f:\mathbb{R}^n\to\mathbb{R}$ | $1\times n$ | all first partials |
+| **Jacobian** $J$ | $f:\mathbb{R}^n\to\mathbb{R}^m$ | $m\times n$ | $J_{ij} = \partial f_i/\partial x_j$ |
+| **Hessian** $H$ | $f:\mathbb{R}^n\to\mathbb{R}$ | $n\times n$ | $H_{ij} = \partial^2 f/\partial x_i\partial x_j$ |
+
+The Hessian is **symmetric** when second partials are continuous (Schwarz's theorem), so the spectral theorem applies to it.
+
+**Gradient = direction of steepest ascent.** Gradient descent steps along $-\nabla f$.
+
+### 10.3 Chain rule
+
+Single variable: $\;\dfrac{\mathrm{d}}{\mathrm{d}x}f(g(x)) = f'(g(x))\,g'(x)$
+
+Multivariate, $f(x_1(t), x_2(t))$:
+
+$$\frac{\mathrm{d}f}{\mathrm{d}t} = \frac{\partial f}{\partial x_1}\frac{\partial x_1}{\partial t} + \frac{\partial f}{\partial x_2}\frac{\partial x_2}{\partial t}$$
+
+General composition $f = f_k \circ \cdots \circ f_1$: multiply the Jacobians.
+
+$$J_f = J_{f_k}\cdots J_{f_2}J_{f_1}$$
+
+**Backpropagation** is this product evaluated right-to-left, reusing intermediate results — cheap because the final output is a scalar, so you propagate a small row vector backwards rather than a large Jacobian forwards.
+
+### 10.4 Identities to memorise
+
+With $x \in \mathbb{R}^n$, $a \in \mathbb{R}^n$, $A$ and $B$ constant (numerator layout, results are **row** vectors or matrices):
+
+| Function | Derivative w.r.t. $x$ |
+|---|---|
+| $a^\top x \;=\; x^\top a$ | $a^\top$ |
+| $Ax$ | $A$ |
+| $x^\top B x$ | $x^\top(B + B^\top)$ |
+| $x^\top B x$, $B$ symmetric | $2x^\top B$ |
+| $\|x\|_2^2 = x^\top x$ | $2x^\top$ |
+| $(y - Xb)^\top(y - Xb)$ w.r.t. $b$ | $-2(y - Xb)^\top X$ |
+
+That last row is the least-squares loss. Setting it to zero:
+
+$$-2(y-Xb)^\top X = \mathbf{0} \iff X^\top(y - Xb) = \mathbf{0}$$
+
+— the normal equations, derived by calculus instead of geometry. **The two routes agree**, which is the central result of the next section.
+
+### 10.5 Taylor expansion
+
+$$f(x) \approx f(x_0) + \nabla f(x_0)(x - x_0) + \tfrac{1}{2}(x-x_0)^\top H(x_0)(x - x_0)$$
+
+First-order term gives the tangent plane; second-order term gives curvature. At a stationary point ($\nabla f = \mathbf{0}$), the **definiteness of $H$** classifies it: positive definite → minimum, negative definite → maximum, indefinite → saddle.
+
+---
+
+## 11. Application — Least Squares / OLS
+
+### 11.1 Setup
+
+$$X \in \mathbb{R}^{n\times d}, \quad \text{columns independent}, \qquad U = \text{span}\{x_1,\ldots,x_d\} = \text{im}(X) \subseteq \mathbb{R}^n$$
+
+| Object | Type | Lives in | Meaning |
+|---|---|---|---|
+| $X$ | matrix | $\mathbb{R}^{n\times d}$ | design matrix |
+| $x_j$ | vector | $\mathbb{R}^n$ | one **feature** across all observations |
+| $U$ | **subspace** | $\subseteq\mathbb{R}^n$ | every prediction the model can make |
+| $y$ | vector | $\mathbb{R}^n$ | target |
+| $\hat y$ | vector | $U$ | projection — best achievable fit |
+| $\beta$ | vector | $\mathbb{R}^d$ | **coordinates** of $\hat y$ in the basis of columns |
+| $r = y - \hat y$ | vector | $U^\perp$ | residual |
+
+$n$ = observations (rows), $d$ = features (columns), typically $n \gg d$.
+
+> Read the table **column-wise**, not row-wise. Each $x_j$ is one entire feature column treated as a single vector in $\mathbb{R}^n$.
+>
+> $X$ is **injective but not surjective**: $\text{im}(X)$ is only a $d$-dimensional slice of $\mathbb{R}^n$. So $y$ almost certainly isn't reachable, $X\beta = y$ has no exact solution, and you project instead. **That is the entire reason least squares exists.**
+
+### 11.2 The derivation chain
+
+**(1) $\hat y = X\beta$ for some $\beta$.** $\hat y \in U$ by definition of projection; $U$ is the span of the columns; anything in that span is a linear combination of columns; and $X\beta$ *is* such a combination. Existence comes from **spanning**; uniqueness of $\beta$ comes from **independence**.
+
+**(2) Orthogonality.** $r \perp U$, and it suffices to check the spanning vectors:
+
+$$\langle x_j,\, y - X\beta\rangle = 0, \qquad j = 1,\ldots,d$$
+
+**(3) Stack into matrix form.** Transposing puts the columns of $X$ into the rows of $X^\top$, so the product collects all $d$ dot products:
+
+$$X^\top(y - X\beta) = \begin{bmatrix}\langle x_1, r\rangle \\ \vdots \\ \langle x_d, r\rangle\end{bmatrix} = \mathbf{0}$$
+
+**(4) Normal equations.** Distribute and rearrange:
+
+$$\boxed{X^\top X\beta = X^\top y}$$
+
+**(5) $X^\top X$ is invertible.** It's $d\times d$ (square), so it's enough to show a trivial kernel. Suppose $X^\top Xv = \mathbf{0}$. Left-multiply by $v^\top$:
+
+$$v^\top X^\top X v = 0 \implies (Xv)^\top(Xv) = \|Xv\|_2^2 = 0 \implies Xv = \mathbf{0} \implies v = \mathbf{0}$$
+
+using the norm axiom, then linear independence of the columns. $\blacksquare$
+
+> **The trick:** you can't "cancel" a matrix, but left-multiplying by $v^\top$ converts the equation into a **squared norm**, where zero forces the vector itself to be zero.
+
+**(6) Solve and build the projection matrix.**
+
+$$\boxed{\beta = (X^\top X)^{-1}X^\top y} \qquad \hat y = X\beta = \underbrace{X(X^\top X)^{-1}X^\top}_{P,\ \text{the hat matrix}}y$$
+
+$P$ is $n\times n$, symmetric, idempotent, with $\text{rank}(P) = d$.
+
+### 11.3 Consequences
+
+**Pythagoras** (since $\hat y \perp r$):
+
+$$\|y\|^2 = \|\hat y\|^2 + \|r\|^2$$
+
+— the sum-of-squares decomposition, which is where $R^2$ comes from.
+
+**$X^\top r = \mathbf{0}$** means residuals are uncorrelated with every predictor. With an intercept, one column is all-ones, forcing $\sum_i r_i = 0$.
+
+**If the columns were dependent**: $\hat y$ is still unique (the closest point doesn't care how you describe $U$), but $\beta$ is not. Predictions fine, coefficients meaningless — **multicollinearity**.
+
+### 11.4 PCA in one block
+
+1. **Centre** the data: $\;X \leftarrow X - \bar{x}$ ← **mandatory**, because a subspace must pass through the origin
+2. Covariance $\;C = \frac{1}{n-1}X^\top X$ — symmetric, so the spectral theorem applies
+3. Eigendecompose $\;C = PDP^\top$
+4. **Eigenvectors** = principal components (directions of maximum variance); **eigenvalues** = variance captured along each
+5. Sort by $\lambda$ descending, keep the top $k$
+6. Project: $\;Z = XP_k$
+
+$$\text{explained variance ratio} = \frac{\lambda_i}{\sum_j \lambda_j}$$
+
+In practice computed via **SVD** of the centred $X$ rather than by forming $C$ — better numerical stability.
+
+> Because the components are orthogonal and the data is centred, the inner product is proportional to covariance. **Orthogonal ⟺ uncorrelated.** "PCA produces orthogonal components" and "PCA produces uncorrelated features" are the same sentence.
+
+---
+
+## 12. Traps
+
+| Trap | Correct version |
+|---|---|
+| Line/plane not through $\mathbf{0}$ called a subspace | that's **affine**. Every subspace contains $\mathbf{0}$ — check this first |
+| $U \cup W$ is a subspace | **false** unless nested. $U \cap W$ and $U + W$ are |
+| Image basis from the **reduced** matrix | take pivot columns from the **ORIGINAL** |
+| Column operations during elimination | **rows only** — columns are variables |
+| Free columns must be zeroed in RREF | only **pivot** columns get cleared |
+| $(X^\top X)^{-1} = X^{-1}(X^\top)^{-1}$ | **false** — non-square $X$ has no inverse |
+| $\ker$ and $\text{im}$ compared directly | different spaces: $\ker \subseteq \mathbb{R}^d$, $\text{im} \subseteq \mathbb{R}^n$ |
+| "$\dim V = n$" means $\lvert S\rvert = n$ | it's the **required** headcount, not the supplied one |
+| Spanning set ⟹ basis | also needs **independence** |
+| $\|x\| = \|y\| \Rightarrow \langle x,y\rangle = \|x\|\|y\|$ | **false** — equal length says nothing about direction |
+| Gradient shape mismatch | MML gradients are **row** vectors (numerator layout) |
+| Forgetting to centre before PCA | first component just recovers the mean |
+| $\mathbf{0}$ called an eigenvector | eigenvectors must be non-zero (though $\mathbf{0} \in E_\lambda$) |
+| $(AB)^\top = A^\top B^\top$ | order **reverses**: $B^\top A^\top$ |
+
+---
+
+## 13. Decision table
+
+| Asked | Do |
+|---|---|
+| Is $S$ a basis? | count $\lvert S\rvert$ vs $\dim V$ first → then REF, need $\dim V$ pivots |
+| Basis + dimension of a span | columns → REF → pivot columns of the **original**; $\dim = $ rank |
+| Coordinate vector $[\alpha]_B$ | basis as columns of $A$, augment $[A \mid \alpha]$, → RREF |
+| Find $\ker$ | → RREF, parametrise free variables, one basis vector each |
+| Find $\text{im}$ | → REF, pivot columns of the original |
+| Injective? | every **column** has a pivot |
+| Surjective? | every **row** has a pivot |
+| Invertible? | square + $\det \neq 0$ (use the equivalence chain) |
+| Eigenvalues, 2×2 | $\lambda^2 - \text{trace}\,\lambda + \det = 0$ |
+| Eigenvalues, 3×3+ | expand $\det(A - \lambda I) = 0$; check $\sum\lambda = $ trace, $\prod\lambda = \det$ |
+| Eigenvectors | solve $\ker(A - \lambda I)$ for each $\lambda$ |
+| $\det$ of 4×4+ | reduce to REF, multiply the diagonal, track row scalings |
+| Project $y$ onto $U$ | $P = B(B^\top B)^{-1}B^\top$, or solve $B^\top(y - B\beta) = \mathbf{0}$ |
+| Prove a "for all" claim false | **one counterexample** |
+| Prove $M$ invertible, no numbers | show $\ker(M) = \{\mathbf{0}\}$; if $M = A^\top A$, use $v^\top A^\top Av = \|Av\|^2$ |
+| Show two matrices equal | multiply out both sides, match entry by entry |
+
+---
+
+## 14. Concept map
+
+```
+                         MATRIX A (a transformation)
+                                   │
+        ┌──────────────────────────┼──────────────────────────┐
+        │                          │                          │
+   ker(A) ⊆ R^d              im(A) ⊆ R^n              det / eigenvalues
+   free columns              pivot columns            volume / stretch
+   crushed to 0              reachable outputs        λ, characteristic poly
+        │                          │                          │
+   injective ⟺ ker={0}      surjective ⟺ rank=n       invertible ⟺ det≠0
+        │                          │                          │
+        └──────── rank–nullity ────┘                   A = PDP⁻¹
+              rank + dim ker = d                    (PDPᵀ if symmetric)
+                                   │                          │
+                            ORTHOGONALITY  ────────────────  SVD
+                            r ⊥ U, projections           A = UΣVᵀ
+                                   │                          │
+                              LEAST SQUARES                  PCA
+                          XᵀXβ = Xᵀy, P = X(XᵀX)⁻¹Xᵀ   eigen(covariance)
+```
+
+---
+
+*Last built from `linear-algebra.md` — regenerate with `python3 cheatsheet/build.py`.*
+
+
+
+

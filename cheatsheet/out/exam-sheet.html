@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Exam Sheet — Linear Algebra & Calculus</title>
+<link rel="stylesheet" href="../vendor/katex.min.css">
+<style>
+  :root { --rule: #d0d0d0; --muted: #555; --accent: #1a4a7a; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    margin: 0 auto;
+    color: #111;
+  }
+
+  h1 { border-bottom: 3px solid var(--accent); padding-bottom: .15em; margin-top: 0; }
+  h2 { color: var(--accent); border-bottom: 1.5px solid var(--rule); padding-bottom: .1em; }
+  h3 { margin-bottom: .3em; }
+  h4 { color: var(--muted); margin-bottom: .2em; }
+
+  table { border-collapse: collapse; width: 100%; margin: .5em 0; }
+  th, td { border: 1px solid var(--rule); padding: .25em .45em; text-align: left; vertical-align: top; }
+  th { background: #f2f5f8; font-weight: 600; }
+
+  code { background: #f4f4f4; padding: .1em .25em; border-radius: 3px; font-size: .9em; }
+  pre { background: #f7f7f7; padding: .5em .7em; border-radius: 4px; overflow-x: auto; line-height: 1.25; }
+  pre code { background: none; padding: 0; }
+
+  blockquote {
+    border-left: 3px solid var(--accent); margin: .5em 0; padding: .15em .8em;
+    background: #f7fafd; color: #333;
+  }
+
+  hr { border: none; border-top: 1px solid var(--rule); margin: 1.2em 0; }
+  ul, ol { margin: .3em 0; padding-left: 1.3em; }
+  li { margin: .1em 0; }
+  .katex-display { margin: .4em 0; }
+
+  body { font-size: 9.5pt; line-height: 1.35; max-width: 56em; padding: 1em; }
+  h1 { font-size: 17pt; }
+  h2 { font-size: 12.5pt; margin-top: 1.1em; }
+  h3 { font-size: 10.5pt; margin-top: .7em; }
+  h4 { font-size: 9.5pt; margin-top: .5em; }
+  table { font-size: 8.5pt; }
+  pre { font-size: 8pt; }
+
+  @page { margin: 10mm; }
+
+  @media print {
+    body { max-width: none; padding: 0; font-size: 8.5pt; }
+    table { font-size: 7.8pt; }
+    h1, h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
+    table, pre, blockquote, tr { break-inside: avoid; page-break-inside: avoid; }
+    .katex-display { break-inside: avoid; page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div id="content">Rendering&hellip;</div>
+
+<script type="text/markdown" id="source"># Exam Reference — Linear Algebra
+
+*Brush-Up in Mathematics, Probability & Statistics · BSE 2026 · exam format: True/False with brief justification*
+
+> **PART A — LINEAR ALGEBRA** · **A1** Sets/Functions · **A2** Vectors · **A3** Subspaces · **A4** Lin. Indep. · **A5** Basis/Dim · **A6** Inner Prod/Norms/Angles · **A7** Projections · **A8** Linear Maps · **A9** Matrix Ops · **A10** Inverse/Trace/Det/Rank/Orthogonal · **A11** Eigen · **A12** Definiteness · **A13** Decompositions
+>
+> **PART B — CALCULUS** · **B1** Differentiation · **B2** Stationary Points · **B3** Convexity · **B4** Taylor · **B5** Partials/Gradient · **B6** Directional Derivative · **B7** Gradient Identities · **B8** Hessian · **B9** Jacobian/Chain Rule · **B10** Applications
+>
+> **TOOLKIT** · **T1** Fast Verdict · **T2** T/F Bank · **T3** Decision Table · **T4** Traps
+>
+> ⭐ = high-frequency exam item · ⚠️ = common error
+
+---
+
+## A0. Notation
+
+| Symbol | Meaning | | Symbol | Meaning |
+|---|---|---|---|---|
+| $x \in A$ | element of | | $\Omega(x,y)$ | general inner product |
+| $U \subseteq V$ | subspace of (lecturer's usage) | | $\langle x,y\rangle$ | dot product $=x^\top y$ |
+| $\forall$ / $\exists$ | for all / there exists | | $\omega$ | angle between vectors |
+| $A \in \mathbb{R}^{n\times m}$ | $n$ rows, $m$ columns | | $\pi_U(x)$ | projection of $x$ onto $U$ |
+| $A^\top$ | transpose, $(A^\top)_{ij}=a_{ji}$ | | $P_\pi$ | projection matrix |
+| $\text{rk}(A)$ | rank | | $\Phi$ | linear mapping |
+| $\ker$ / $\text{im}$ | kernel / image | | $\lambda,\psi$ | scalars |
+| $E_\lambda$ | eigenspace | | $\text{gm}/\text{am}$ | geometric / algebraic multiplicity |
+
+Vectors are **columns** by default: $c=(x_1,\dots,x_n)^\top\in\mathbb{R}^{n\times1}$, $\ c^\top=r$ a row vector.
+
+---
+
+## A1. Sets & Functions
+
+$$A\cup B=\{x: x\in A \text{ or } x\in B\} \qquad A\cap B=\{x: x\in A \text{ and } x\in B\}$$
+$$A\setminus B=\{x: x\in A,\ x\notin B\} \qquad A^c=U\setminus A$$
+
+**De Morgan:** $\ (A\cup B)^c=A^c\cap B^c$, $\ (A\cap B)^c=A^c\cup B^c$
+
+Power set $2^A$ = all subsets incl. $\varnothing$ and $A$; $\lvert 2^A\rvert=2^{\lvert A\rvert}$.
+
+**Functions** $f:A\to B$ — domain $A$, codomain $B$.
+
+| | Definition |
+|---|---|
+| **Image** | $f(S)=\{f(s):s\in S\}\subseteq B$; $\ \text{Im}(f)=f(A)$ |
+| **Preimage** | $f^{-1}(T)=\{a\in A: f(a)\in T\}$ — **defined even with no inverse** |
+| **Injective** | $f(a_1)=f(a_2)\Rightarrow a_1=a_2$ |
+| **Surjective** | $f(A)=B$ |
+| **Bijective** | both |
+
+⭐ $f^{-1}$ exists **iff $f$ is bijective**; then unique, with $f^{-1}\circ f=\text{id}_A$, $f\circ f^{-1}=\text{id}_B$.
+
+---
+
+## A2. Vectors & vector spaces
+
+$V=(\mathcal V,+,\cdot)$ — a set with **inner operation** $+:\mathcal V\times\mathcal V\to\mathcal V$ and **outer operation** $\cdot:\mathbb{R}\times\mathcal V\to\mathcal V$, containing the neutral element $\mathbf 0$ with $u+\mathbf 0=\mathbf 0+u=u$.
+
+**Axioms:** $(\mathcal V,+)$ abelian group (associative · commutative · has $\mathbf 0$ · has inverses) + scalar rules ($\lambda(x+y)=\lambda x+\lambda y$ · $(\lambda+\psi)x=\lambda x+\psi x$ · $\lambda(\psi x)=(\lambda\psi)x$ · $1\cdot x=x$).
+
+---
+
+## A3. Subspaces
+
+### ⭐ Subspace test — 3 checks
+
+1. $U\neq\varnothing$ and $\mathbf 0\in U$ ← **cheapest, do first**
+2. Closed under $+$: $\ u,v\in U\Rightarrow u+v\in U$
+3. Closed under $\cdot$: $\ \lambda u\in U \ \forall\lambda\in\mathbb{R}$ ← **always try $\lambda=-1$**
+
+**The three standard examples** ($V=\mathbb{R}^2$):
+
+| Set | $\mathbf 0\in$ | $+$ | $\cdot$ | Subspace? |
+|---|---|---|---|---|
+| $A=\{(x,x)\}$ | ✓ | ✓ | ✓ | **Yes** |
+| $B=\{(x,x{+}1)\}$ | ✗ | — | — | **No** — misses origin |
+| $C=\{(x,x):x\ge0\}$ | ✓ | ✓ | ✗ | **No** — fails at $\lambda=-1$ |
+
+> **Every subspace contains $\mathbf 0$.** A line/plane not through the origin is **affine**, not a subspace.
+
+### Combining subspaces
+
+| | Subspace? | |
+|---|---|---|
+| $U\cap W$ | ✅ always | both conditions survive addition |
+| $U\cup W$ | ❌ **generally not** | only if one contains the other |
+| $U+W=\{u+w\}$ | ✅ always | $=\text{span}(U\cup W)$ |
+
+⭐ **Counterexample:** x-axis $\cup$ y-axis in $\mathbb{R}^2$; $(1,0)+(0,1)=(1,1)$ lies on neither.
+
+```
+   y                              █ = in U ∪ W
+ 2 │  ·   ·   █   ·   ·           ? = (1,1), NOT in the union
+ 1 │  ·   ·   w━━━?   ·
+   │          ┃   ┃               A union gives the points of both
+ 0 │  █   █   O━━━u   █           pieces but nothing in the gap.
+-1 │  ·   ·   █   ·   ·           Addition walks straight into it.
+   └────────────────────→ x
+     -2  -1   0   1   2
+```
+
+---
+
+## A4. Linear independence
+
+$$\textbf{Independent:}\quad \sum_{i=1}^k\lambda_ix_i=\mathbf 0 \ \Longrightarrow\ \lambda_1=\cdots=\lambda_k=0$$
+
+$$\textbf{Dependent:}\quad \exists\ \lambda_i\neq0 \ \text{ with } \ \sum\lambda_ix_i=\mathbf 0$$
+
+The **trivial** combination always works; independence means it's the *only* one.
+
+Rearranging exposes the redundancy: $\ 1v_1+1v_2-1v_3=\mathbf 0 \iff v_3=v_1+v_2$.
+
+### ⭐ Test: Gaussian elimination
+
+**Vectors as columns → REF → independent iff every column has a pivot.**
+
+*Pivot* = first non-zero entry in a row. *REF* = only zeros below each leading entry.
+
+$$x_1=\begin{bmatrix}1\\2\\-3\\4\end{bmatrix} x_2=\begin{bmatrix}1\\1\\0\\2\end{bmatrix} x_3=\begin{bmatrix}-1\\-2\\1\\1\end{bmatrix} \Rightarrow \begin{bmatrix}1&1&-1\\2&1&-2\\-3&0&1\\4&2&1\end{bmatrix} \xrightarrow{\ \cdots\ } \begin{bmatrix}\mathbf 1&1&-1\\0&\mathbf 1&0\\0&0&\mathbf{-2}\\0&0&0\end{bmatrix}$$
+
+3 pivots, 3 columns → **independent**.
+
+### Free checks — before any arithmetic
+
+| | Verdict |
+|---|---|
+| Set contains $\mathbf 0$ | dependent |
+| One vector is a multiple of another | dependent |
+| ⭐ **More than $n$ vectors in $n$-dim space** | **dependent, guaranteed** |
+
+**Geometrically:** 2 independent vectors aren't collinear; 3 in $\mathbb{R}^3$ aren't coplanar — they enclose real volume, so $\det\neq0$.
+
+---
+
+## A5. Span, basis, dimension
+
+**Span** of $A=\{x_1,\dots,x_k\}$ = all linear combinations. If every $v\in V$ is such a combination, $A$ is a **generating set**.
+
+**Basis** = generating set that is linearly independent = **minimal** generating set.
+
+$$\dim(V)=\text{number of basis vectors}$$
+
+### ⭐ $\dim$ counts *directions*, not *components*
+
+$$U=\text{span}\{x_1,x_2,x_3\}\subseteq\mathbb{R}^3, \quad x_1=\begin{bmatrix}1\\2\\-1\end{bmatrix} x_2=\begin{bmatrix}2\\-1\\1\end{bmatrix} x_3=\begin{bmatrix}3\\-4\\3\end{bmatrix}$$
+
+$$\begin{bmatrix}1&2&3\\2&-1&-4\\-1&1&3\end{bmatrix}\to\begin{bmatrix}\mathbf 1&2&3\\0&\mathbf 1&2\\0&0&0\end{bmatrix} \Rightarrow \text{basis }\{x_1,x_2\},\quad \dim(U)=2$$
+
+| Question | Answer |
+|---|---|
+| Components per vector? | **3** (they live in $\mathbb{R}^3$) |
+| $\dim(\mathbb{R}^3)$? | **3** — the *ambient* space |
+| Pivots? | **2** ($x_3=2x_2-x_1$) |
+| $\dim(U)$? | **2** — $U$ is a **plane** inside $\mathbb{R}^3$ |
+
+> A sheet of paper in a room: a point needs **3** numbers to locate in the room, **2** to locate on the paper. $U\subseteq\mathbb{R}^n \Rightarrow \dim(U)\le n$, with equality only if $U=\mathbb{R}^n$.
+
+### ⭐ Counting rule — free, do it first
+
+For $k$ vectors in an $n$-dimensional space: $\ k<n$ → can't span. $\ k>n$ → dependent. $\ k=n$ → check rank.
+
+### Canonical basis
+
+$$\mathcal B_1=\{e_1,e_2\}=\left\{\begin{bmatrix}1\\0\end{bmatrix},\begin{bmatrix}0\\1\end{bmatrix}\right\}$$
+
+In the canonical basis, **coordinates are the components** — which is why you normally never think about bases. Other bases are equally valid, just less convenient.
+
+### Coordinate vector
+
+Ordered basis $B=(b_1,\dots,b_n)$, $\ x=\alpha_1b_1+\cdots+\alpha_nb_n$:
+
+$$\alpha=(\alpha_1,\dots,\alpha_n)^\top\in\mathbb{R}^n \quad\text{is the coordinate vector of } x \text{ wrt } B$$
+
+**To compute:** basis as columns of $A$, solve $A\alpha=x$ via $[A\mid x]$ → RREF.
+
+$$a=\begin{bmatrix}2\\1\end{bmatrix},\ B_A=\left\{\begin{bmatrix}1\\-1\end{bmatrix},\begin{bmatrix}1\\1\end{bmatrix}\right\}: \quad \begin{cases}\alpha_1+\alpha_2=2\\-\alpha_1+\alpha_2=1\end{cases} \Rightarrow \alpha=\begin{bmatrix}1/2\\3/2\end{bmatrix}$$
+
+**Two one-way effects.** Adding a vector: span can only **grow**; independence can only be **lost**. A basis is the balance point.
+
+---
+
+## A6. Inner products → norms → distances → angles
+
+*Order matters: each object is built from the previous one.*
+
+### Inner product (the primitive)
+
+$\Omega:V\times V\to\mathbb{R}$ is an **inner product** if **symmetric**, **bilinear**, **positive definite**:
+
+$$\Omega(x,y)=\Omega(y,x) \qquad \Omega(x,x)>0\ \forall x\neq\mathbf 0,\ \ \Omega(\mathbf 0,\mathbf 0)=0$$
+$$\Omega(\lambda x+\psi y,\,z)=\lambda\Omega(x,z)+\psi\Omega(y,z) \quad\text{(same in 2nd argument)}$$
+
+**Dot product** — the standard inner product on $\mathbb{R}^n$:
+
+$$\langle x,y\rangle=x^\top y=\sum_{i=1}^N x_iy_i \qquad (1\times n)(n\times 1) \text{ — shapes must match}$$
+
+### Norm (derived)
+
+$$\|x\|=\sqrt{\langle x,x\rangle} \qquad\text{— every inner product \textbf{induces} a norm}$$
+
+**Axioms:** absolutely homogeneous $\|\lambda x\|=\lvert\lambda\rvert\|x\|$ · triangle inequality $\|x+y\|\le\|x\|+\|y\|$ · positive definite $\|x\|\ge0$ and $\|x\|=0\iff x=\mathbf 0$.
+
+$$\|x\|_2=\sqrt{x^\top x}=\sqrt{\textstyle\sum x_i^2} \qquad \|x\|_1=\sum_{i=1}^N\lvert x_i\rvert \qquad \|x\|_\infty=\max_{1\le i\le N}\lvert x_i\rvert$$
+
+$$a=(2,1)^\top \Rightarrow \|a\|_2=\sqrt{4+1}=\sqrt5$$
+
+**Unit balls** $\{x:\|x\|=1\}$ — all cross the axes at $(\pm1,0),(0,\pm1)$; they differ on the **diagonal**:
+
+```
+  ┌───────────────┐   p = ∞   square, corners (±1,±1)
+  │   ╭───────╮   │   p = 2   circle, diagonal at 1/√2 ≈ .707
+  │  ╱  ╱───╲  ╲  │   p = 1   diamond, diagonal at 0.5
+  │ │  │  ·  │  │ │   p = ½   concave — NOT a norm
+  │  ╲  ╲───╱  ╱  │
+  │   ╰───────╯   │   ‖x‖∞ ≤ ‖x‖₂ ≤ ‖x‖₁  ⟹  B₁ ⊆ B₂ ⊆ B∞
+  └───────────────┘
+```
+
+### Distance (derived)
+
+$$d(x,y)=\|x-y\|$$
+
+Non-negative, $=0\iff x=y$ · **symmetric** $d(x,y)=d(y,x)$ · **triangle inequality** $d(x,z)\le d(x,y)+d(y,z)$.
+
+$$a=(2,1)^\top,\ b=(-0.5,1)^\top \Rightarrow a-b=(2.5,0)^\top \Rightarrow d(a,b)=2.5$$
+
+### ⭐ Cauchy–Schwarz (the bridge to angles)
+
+$$\lvert\langle x,y\rangle\rvert\le\|x\|\,\|y\|$$
+
+> **What it's for: it makes "angle" well-defined.** It forces $\dfrac{\langle x,y\rangle}{\|x\|\|y\|}\in[-1,1]$, the range of $\cos$. Without it, no angle $\omega$ would exist. It also proves the triangle inequality, and bounds cosine similarity in $[-1,1]$.
+
+⭐ **Equality $\iff x,y$ linearly dependent.** If $y=\lambda x$: $\ \lvert\langle x,\lambda x\rangle\rvert=\lvert\lambda\rvert\|x\|_2^2=\|x\|_2\|\lambda x\|_2$.
+
+### Angle & orthogonality
+
+$$\boxed{\cos(\omega)=\frac{\langle x,y\rangle}{\|x\|\,\|y\|}}, \qquad \text{unique } \omega\in[0,\pi]$$
+
+| $\cos\omega$ | $1$ | $0$ | $-1$ |
+|---|---|---|---|
+| $\omega$ | $0°$ | $90°$ | $180°$ |
+
+**Law of cosines** — derive, don't memorise:
+
+$$\|x-y\|^2=(x-y)^\top(x-y)=\langle x,x\rangle-2\langle x,y\rangle+\langle y,y\rangle=\|x\|^2+\|y\|^2-2\|x\|\|y\|\cos\omega$$
+
+$$x\perp y\iff\langle x,y\rangle=0; \quad \textbf{orthonormal} \text{ if additionally } \|x\|=\|y\|=1$$
+
+**Orthonormal basis:** $\langle b_i,b_j\rangle=0$ for $i\neq j$ and $\langle b_i,b_i\rangle=1$. Then coordinates are free: $\ v=\sum_i\langle v,e_i\rangle e_i$.
+
+$$a=(2,1)^\top,\ b=(-0.5,1)^\top:\ \langle a,b\rangle=-1+1=0 \Rightarrow \omega=90°,\ \textbf{orthogonal}$$
+
+⭐ **Orthogonal (non-zero) $\Rightarrow$ independent.** Pythagoras: $x\perp y\Rightarrow\|x+y\|^2=\|x\|^2+\|y\|^2$.
+
+---
+
+## A7. Projections
+
+$\pi:V\to U$ is a **projection** if $\ \pi^2=\pi\circ\pi=\pi$ — *applying it twice equals applying it **once***.
+
+### ⭐ Onto a line $U=\text{span}\{b\}$
+
+Find $\lambda$ from **orthogonality** — the residual must be $\perp b$:
+
+$$\langle x-\lambda b,\ b\rangle=0 \Rightarrow \langle x,b\rangle-\lambda\langle b,b\rangle=0 \Rightarrow \boxed{\lambda=\frac{b^\top x}{b^\top b}}$$
+
+$$\pi_U(x)=\lambda b=\frac{bb^\top}{\|b\|_2^2}x=P_\pi x, \qquad \boxed{P_\pi=\frac{bb^\top}{b^\top b}}$$
+
+For a **unit** $u$: $\ P=uu^\top$ (denominator is 1).
+
+> ⚠️ **$b^\top b$ is a scalar** (denominator); **$bb^\top$ is an $n\times n$ matrix** (numerator). Check shapes first — the #1 place to lose marks here.
+
+**Worked:** $U=\text{span}\{(1,2,3)^\top\}$, $x=(1,4,2)^\top$
+
+$$bb^\top=\begin{bmatrix}1&2&3\\2&4&6\\3&6&9\end{bmatrix},\ b^\top b=14 \Rightarrow P_\pi=\tfrac1{14}\begin{bmatrix}1&2&3\\2&4&6\\3&6&9\end{bmatrix}$$
+$$b^\top x=1+8+6=15 \Rightarrow \lambda=\tfrac{15}{14},\quad \pi_U(x)=\tfrac{15}{14}(1,2,3)^\top$$
+
+**Distance to the subspace** $=\|r\|$ where $r=x-\pi_U(x)$.
+
+### Onto a subspace
+
+$$P=A(A^\top A)^{-1}A^\top, \qquad \beta=(A^\top A)^{-1}A^\top x$$
+
+### ⭐ Properties of any projection matrix
+
+| | |
+|---|---|
+| $P^\top=P$ | symmetric |
+| $P^2=P$ | idempotent |
+| Eigenvalues | only $1$ and $0$ |
+| $\text{rk}(P)=\text{tr}(P)=\dim U$ | |
+
+**Worked:** $A=\begin{bmatrix}1&0\\1&1\\0&1\end{bmatrix}$, $A^\top A=\begin{bmatrix}2&1\\1&2\end{bmatrix}$, $(A^\top A)^{-1}=\tfrac13\begin{bmatrix}2&-1\\-1&2\end{bmatrix}$
+
+$$P=\tfrac13\begin{bmatrix}2&1&-1\\1&2&1\\-1&1&2\end{bmatrix}, \quad \lambda=1\ (\text{mult }2),\ 0\ (\text{mult }1), \quad \text{rk}=2$$
+
+### The geometry
+
+```
+        y
+        ↑╲                 y  = ŷ + r,  ŷ ∈ U,  r ∈ U⊥
+        │ ╲  r = y - ŷ
+        │  ╲                "closest point" and "perpendicular
+   ─────┴───●──────── U      residual" are the SAME condition
+            ŷ
+```
+
+Checking $\perp$ to a whole subspace only needs the spanning vectors:
+$\ \langle u,r\rangle=\left\langle\sum_jc_jx_j,\ r\right\rangle=\sum_jc_j\langle x_j,r\rangle=0$.
+
+---
+
+## A8. Linear mappings, kernel & image
+
+$$\Phi:V\to W \text{ linear} \iff \Phi(\lambda x+\psi y)=\lambda\Phi(x)+\psi\Phi(y) \quad \forall x,y\in V,\ \lambda,\psi\in\mathbb{R}$$
+
+| | $\ker\Phi$ | $\text{im}\,\Phi$ |
+|---|---|---|
+| **Definition** | $\{x\in V:\Phi(x)=\mathbf 0\}$ | $\{\Phi(x)\}=\text{span}\{\text{columns}\}$ |
+| **Lives in** | $V$ — **input** side | $W$ — **output** side |
+| **From REF** | **free** columns, parametrised | **pivot** columns of the **ORIGINAL** |
+| **Dimension** | nullity | rank |
+
+> ⚠️ **Different spaces.** For $\Phi:\mathbb{R}^3\to\mathbb{R}^2$, kernel vectors have **3** entries, image vectors **2**.
+
+### ⭐ Rank–nullity
+
+$$\dim V=\dim(\text{im}\,\Phi)+\dim(\ker\Phi)$$
+
+Every input dimension is either **preserved** (into the image) or **crushed** (into the kernel).
+
+### ⭐ Injective $\iff$ trivial kernel
+
+$$\Phi(x_1)=\Phi(x_2) \Rightarrow \Phi(x_1-x_2)=\mathbf 0 \Rightarrow x_1-x_2\in\ker\Phi$$
+
+If $\ker=\{\mathbf 0\}$ then $x_1=x_2$. Conversely, if $v\neq\mathbf 0$ is in the kernel then $\Phi(x+v)=\Phi(x)$ for **every** $x$ — one collision manufactures collisions everywhere. **Linearity is why inspecting one point settles injectivity globally.**
+
+| | Condition | In REF | Requires |
+|---|---|---|---|
+| **Injective** | $\ker=\{\mathbf 0\}$, rank $=\dim V$ | pivot in every **column** | $\dim W\ge\dim V$ |
+| **Surjective** | $\text{im}=W$, rank $=\dim W$ | pivot in every **row** | $\dim V\ge\dim W$ |
+| **Bijective** | both | square, $\det\neq0$ | $\dim V=\dim W$ |
+
+**Columns → injective. Rows → surjective.** One reduction, read two ways.
+
+```
+ TALL (dim W > dim V)      WIDE (dim V > dim W)      SQUARE
+ can be injective          can be surjective         can be both
+ NEVER surjective          NEVER injective           (iff det ≠ 0)
+```
+
+### Worked — Problem 8
+
+$$A_\Phi=\begin{bmatrix}1&2&0\\0&1&0\\1&0&1\end{bmatrix}: \det=1\neq0 \Rightarrow \ker=\{\mathbf 0\},\ \text{im}=\mathbb{R}^3 \Rightarrow \textbf{bijective}$$
+
+$$B_{\Phi'}=\begin{bmatrix}1&2&3\\0&1&1\\1&3&4\end{bmatrix}: \det=0 \xrightarrow[R_3-R_2]{R_3-R_1}\begin{bmatrix}1&2&3\\0&1&1\\0&0&0\end{bmatrix}\xrightarrow{R_1-2R_2}\begin{bmatrix}\mathbf 1&0&1\\0&\mathbf 1&1\\0&0&0\end{bmatrix}$$
+
+$x_3=t$ free $\Rightarrow x_1=-t,\ x_2=-t$:
+
+$$\ker\Phi'=\text{span}\left\{\begin{bmatrix}-1\\-1\\1\end{bmatrix}\right\}, \qquad \text{im}\,\Phi'=\text{span}\left\{\begin{bmatrix}1\\0\\1\end{bmatrix},\begin{bmatrix}2\\1\\3\end{bmatrix}\right\}$$
+
+Neither injective nor surjective. Check $1+2=3$ ✓
+
+⭐ **A kernel vector is a recipe for the redundant column:** $-c_1-c_2+c_3=\mathbf 0 \Rightarrow c_3=c_1+c_2$, and indeed $(3,1,4)=(1,0,1)+(2,1,3)$.
+
+### Worked — Problem 9 (different dimensions)
+
+$$B=\begin{bmatrix}1&1&1\\0&1&1\end{bmatrix},\ S:\mathbb{R}^3\to\mathbb{R}^2 \quad\text{already REF, pivots in cols 1,2} \Rightarrow \text{rk}=2$$
+
+$$\ker S=\text{span}\left\{\begin{bmatrix}0\\-1\\1\end{bmatrix}\right\}\subseteq\mathbb{R}^3, \qquad \text{im}\,S=\text{span}\left\{\begin{bmatrix}1\\0\end{bmatrix},\begin{bmatrix}1\\1\end{bmatrix}\right\}=\mathbb{R}^2$$
+
+**Not injective** ($\dim\ker=1$; $S(0,0,0)^\top=S(0,-1,1)^\top$). **Surjective** ($\dim\text{im}=2=\dim\mathbb{R}^2$). Check $1+2=3$ ✓
+
+### ⭐ Transformation matrix
+
+$V,W$ with ordered bases $B=(b_1,\dots,b_n)$, $C=(c_1,\dots,c_m)$; $\Phi:V\to W$ linear. For each $j$:
+
+$$\Phi(b_j)=\sum_{i=1}^m\alpha_{ij}c_i \qquad\text{(unique representation wrt }C)$$
+
+$A_\Phi\in\mathbb{R}^{m\times n}$ with entries $\alpha_{ij}$ is the **transformation matrix**; its **$j$-th column is the coordinate vector of $\Phi(b_j)$ wrt $C$**.
+
+$$\boxed{\hat y=A_\Phi\,\hat x}$$
+
+> ⚠️ **This relates the *coordinates*, not the vectors themselves.**
+
+---
+
+## A9. Matrix operations
+
+**Addition** — element-wise, dimensions must match. **Multiplication** — $A\in\mathbb{R}^{m\times n}$, $B\in\mathbb{R}^{n\times k}$:
+
+$$c_{ij}=\sum_{l=1}^n a_{il}b_{lj}, \qquad (m\times n)(n\times k)=(m\times k)$$
+
+⭐ **The column view:** $\ Ab=b_1A_{\cdot1}+\cdots+b_nA_{\cdot n}$ — *always* a linear combination of $A$'s columns. This is why $\text{im}(A)=\text{span}\{\text{columns}\}$.
+
+| | |
+|---|---|
+| **Associative** | $(AB)C=A(BC)$ |
+| **Distributive** | $(A+B)C=AC+BC$, $\ A(C+D)=AC+AD$ |
+| **NOT commutative** | $AB\neq BA$ in general |
+| **Identity** | $I_mA=AI_n=A$ |
+| **Scalar** | $\lambda A=K$, $k_{ij}=\lambda a_{ij}$ |
+
+> **Why associativity matters:** with $A\in\mathbb{R}^{n\times k}$, $n=100{,}000$, $k=5$ — $(AA^\top)x$ builds a $100{,}000^2$ matrix; $A(A^\top x)$ never exceeds $k$-sized intermediates. Same answer, vastly different cost.
+
+### Transpose & symmetric
+
+$$(A^\top)^\top=A \qquad (A+B)^\top=A^\top+B^\top \qquad \boxed{(AB)^\top=B^\top A^\top}$$
+
+**Order reverses** — same for inverses: $(AB)^{-1}=B^{-1}A^{-1}$.
+
+**Symmetric:** $A=A^\top$ (square only).
+
+⭐ For every $A\in\mathbb{R}^{m\times n}$, $\ A^\top A$ and $AA^\top$ are **symmetric**: $\ (A^\top A)^\top=A^\top(A^\top)^\top=A^\top A$.
+
+| **Sum** of symmetric matrices | always symmetric ✓ |
+|---|---|
+| **Product** of symmetric matrices | **not** always symmetric ✗ |
+
+---
+
+## A10. Inverse · Trace · Determinant · Rank · Orthogonal
+
+### Inverse
+
+$$AA^{-1}=A^{-1}A=I \qquad A=\begin{bmatrix}a&b\\c&d\end{bmatrix} \Rightarrow A^{-1}=\frac{1}{\det(A)}\begin{bmatrix}d&-b\\-c&a\end{bmatrix}$$
+
+Exists **iff** $\det A\neq0$. $\ (A^{-1})^{-1}=A$, $\ (A^\top)^{-1}=(A^{-1})^\top$.
+
+> ⚠️ $(X^\top X)^{-1}\neq X^{-1}(X^\top)^{-1}$ for non-square $X$ — $X$ has no inverse at all.
+
+### Trace
+
+$$\text{tr}(A)=\sum_{i=1}^n a_{ii} \qquad (A\in\mathbb{R}^{n\times n})$$
+
+| | |
+|---|---|
+| $\text{tr}(A+B)=\text{tr}(A)+\text{tr}(B)$, $\ \text{tr}(\lambda A)=\lambda\,\text{tr}(A)$ | **linear operator** |
+| $\text{tr}(I_n)=n$ | |
+| ⭐ $\text{tr}(AB)=\text{tr}(BA)$ | holds even when $AB$, $BA$ differ in **size** |
+| ⭐ $\text{tr}(B^{-1}AB)=\text{tr}(A)$ | **invariant under basis change** |
+| $\text{tr}(xy^\top)=y^\top x$ | outer → inner |
+
+**Cyclic, not arbitrary:** $\text{tr}(ABC)=\text{tr}(BCA)=\text{tr}(CAB)$, but $\text{tr}(ABC)\neq\text{tr}(ACB)$ in general.
+
+$$\boxed{\text{tr}(A)=\sum_i\lambda_i}$$
+
+### Determinant
+
+A function mapping a square $A$ onto the real line: the **volume-scaling factor** of $x\mapsto Ax$, the **sign** indicating whether orientation is preserved or reversed.
+
+$$\lvert A\rvert=\det(A)=a_{11}a_{22}-a_{12}a_{21}, \qquad \det\begin{bmatrix}1&2\\3&4\end{bmatrix}=4-6=-2$$
+
+**Why volume:** for $A=\text{diag}(a_{11},a_{22})$, $\ Ae_1=(a_{11},0)^\top$, $Ae_2=(0,a_{22})^\top$, area $=a_{11}a_{22}=\lvert A\rvert$. If columns are **dependent**, $\tilde A=[\tilde a_1\ \ \lambda\tilde a_1]$ gives $\det=0$ — the $n$-dim volume collapses.
+
+```
+  det ≠ 0                 det = 0
+    ╱─────╱                   ↗
+   ╱     ╱                  ↗        both columns
+  ●─────→                 ●───→      on one line
+  real area               zero area
+```
+
+**3×3 — Sarrus (⚠️ 3×3 only):**
+
+$$\det(A)=a_{11}a_{22}a_{33}+a_{12}a_{23}a_{31}+a_{13}a_{21}a_{32}-a_{31}a_{22}a_{13}-a_{32}a_{23}a_{11}-a_{33}a_{21}a_{12}$$
+
+**$n\times n$ — Laplace expansion** (pick the row/column with most zeros):
+
+$$\text{column } j:\ \det(A)=\sum_{k=1}^n(-1)^{k+j}a_{kj}\det(A_{kj}) \qquad \text{row } j:\ \det(A)=\sum_{k=1}^n(-1)^{k+j}a_{jk}\det(A_{jk})$$
+
+$A_{kj}$ = submatrix after deleting **row $k$, column $j$**.
+
+**Properties**
+
+$$\det(AB)=\det A\det B \quad \det(A)=\det(A^\top) \quad \det(A^{-1})=\tfrac1{\det A} \quad \boxed{\det(\lambda A)=\lambda^n\det A}$$
+
+| Operation | Effect on $\det$ |
+|---|---|
+| Adding multiples of rows/columns to another | **no change** |
+| Swapping two rows/columns | **sign flips** |
+| Triangular or diagonal | $\det=\prod(\text{diagonal})$ |
+
+⭐ $\det A\neq0 \iff$ invertible $\iff$ full rank $\iff \ker=\{\mathbf 0\} \iff$ no $\lambda=0$.
+
+**Worked:** $M(t)=\begin{bmatrix}1&t&0\\0&1&t\\t&0&1\end{bmatrix}$, expand along row 1:
+
+$$\det M=1\cdot\begin{vmatrix}1&t\\0&1\end{vmatrix}-t\cdot\begin{vmatrix}0&t\\t&1\end{vmatrix}=1-t(0-t^2)=1+t^3 \Rightarrow \text{invertible iff } t\neq-1$$
+
+### Rank
+
+> The rank of $A\in\mathbb{R}^{n\times m}$ is the number of **linearly independent columns**, equivalently the number of **linearly independent rows**.
+
+$$\text{full rank} \iff \text{rk}(A)=\min(n,m) \qquad\qquad A\in\mathbb{R}^{n\times n} \text{ invertible} \iff \text{rk}(A)=n$$
+
+$$\boxed{\text{rk}(A)=\text{rk}(A^\top)} \qquad \text{rk}(A)=\#\text{pivots}=\dim\text{im}(A)$$
+
+> ⚠️ **rank $\neq$ number of non-zero eigenvalues.** $\begin{bmatrix}0&1\\0&0\end{bmatrix}$ has rank 1, eigenvalues $0,0$.
+
+**Worked — rank deficiency produces a kernel.** $B=[\,b_1\ \ b_2\ \ \lambda b_2\,]$, $\text{rk}(B)=2$ for $\lambda\neq0$:
+
+$$Bx=x_1b_1+(x_2+\lambda x_3)b_2 \qquad y=\left(x_1,\ x_2-\alpha,\ x_3+\tfrac\alpha\lambda\right)^\top \Rightarrow By=Bx$$
+
+So $\Phi(x-y)=\mathbf 0$, i.e. $v=\left(0,\alpha,-\tfrac\alpha\lambda\right)^\top\in\ker B$. Check: $Bv=\alpha b_2-\tfrac\alpha\lambda\lambda b_2=\mathbf 0$ ✓
+
+> Redundant column ⟹ rank drop ⟹ non-trivial kernel ⟹ inputs collide ⟹ not injective ⟹ not invertible.
+
+### Orthogonal matrix
+
+$$Q\in\mathbb{R}^{n\times n} \text{ orthogonal} \iff QQ^\top=Q^\top Q=I \iff \boxed{Q^\top=Q^{-1}}$$
+
+| | |
+|---|---|
+| **Preserves length** | $\|Qx\|_2=\|x\|_2$ |
+| **Preserves inner product** | $\langle Qx,Qy\rangle=\langle x,y\rangle$ ⟹ preserves **angles and distances** |
+| $\det Q=\pm1$ | volume preserved |
+
+**Rotation matrix is orthogonal:**
+
+$$R(\theta)=\begin{bmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}, \quad R(-\theta)=\begin{bmatrix}\cos\theta&\sin\theta\\-\sin\theta&\cos\theta\end{bmatrix}=R(\theta)^\top$$
+
+$$R(\theta)R(\theta)^\top=\begin{bmatrix}\cos^2\theta+\sin^2\theta&0\\0&\cos^2\theta+\sin^2\theta\end{bmatrix}=I$$
+
+$$R(\theta_1)R(\theta_2)=R(\theta_1+\theta_2), \qquad R(0)=I, \qquad R(\theta)^{-1}=R(-\theta)=R(\theta)^\top$$
+
+Uses $\cos(\alpha+\beta)=\cos\alpha\cos\beta-\sin\alpha\sin\beta$, $\ \sin(\alpha+\beta)=\sin\alpha\cos\beta+\cos\alpha\sin\beta$.
+
+⭐ **Cosine similarity between $x$ and $R(\theta)x$ is exactly $\cos\theta$** — rotation preserves length, so the norms cancel.
+
+---
+
+## A11. Eigenvalues & eigenvectors
+
+$$Ax=\lambda x,\ x\neq\mathbf 0 \iff (A-\lambda I_n)x=\mathbf 0 \iff \boxed{p_A(\lambda)=\det(A-\lambda I)=0}$$
+
+**Characteristic polynomial:**
+
+$$p_A(\lambda)=c_0+c_1\lambda+\cdots+c_{n-1}\lambda^{n-1}+(-1)^n\lambda^n, \qquad \boxed{c_0=\det A}, \quad \boxed{c_{n-1}=(-1)^{n-1}\text{tr}(A)}$$
+
+**Theorem.** $\lambda$ is an eigenvalue **iff** it is a root of $p_A$.
+
+$$\boxed{\det(A)=\prod_i\lambda_i} \qquad \boxed{\text{tr}(A)=\sum_i\lambda_i} \qquad\text{(with algebraic multiplicities)}$$
+
+⭐ **2×2 shortcut:** $\ \lambda^2-\text{tr}(A)\lambda+\det(A)=0$
+
+⭐ **Triangular or diagonal ⟹ eigenvalues are the diagonal entries** ($A-\lambda I$ stays triangular).
+
+⭐ **Some $\lambda_i=0 \iff \exists x\neq\mathbf 0$ with $Ax=\mathbf 0 \iff A^{-1}$ does not exist.**
+
+### ⭐ The spine example — $A=\begin{bmatrix}4&2\\1&3\end{bmatrix}$
+
+**1. Eigenvalues**
+$$\lvert A-\lambda I\rvert=(4-\lambda)(3-\lambda)-2=\lambda^2-7\lambda+10=(\lambda-2)(\lambda-5) \Rightarrow \lambda_1=2,\ \lambda_2=5$$
+Check: $2{+}5=7=\text{tr}$, $\ 2{\cdot}5=10=\det$ ✓
+
+**2. Eigenvectors** — solve $(A-\lambda I)x=\mathbf 0$
+
+$\lambda=2$: $\ 2x_1+2x_2=0\Rightarrow x_1=-x_2$, set $x_2=t$: $\ E_2=\text{span}\left\{\begin{bmatrix}-1\\1\end{bmatrix}\right\}$
+
+$\lambda=5$: $\ -x_1+2x_2=0\Rightarrow x_1=2x_2$, set $x_2=t$: $\ E_5=\text{span}\left\{\begin{bmatrix}2\\1\end{bmatrix}\right\}$
+
+**3. Diagonalize** — distinct eigenvalues ⟹ independent eigenvectors
+
+$$P=\begin{bmatrix}1&2\\-1&1\end{bmatrix},\ D=\begin{bmatrix}2&0\\0&5\end{bmatrix},\ \det P=3,\ P^{-1}=\tfrac13\begin{bmatrix}1&-2\\1&1\end{bmatrix}$$
+
+$$PDP^{-1}=\begin{bmatrix}2&10\\-2&5\end{bmatrix}\tfrac13\begin{bmatrix}1&-2\\1&1\end{bmatrix}=\tfrac13\begin{bmatrix}12&6\\3&9\end{bmatrix}=\begin{bmatrix}4&2\\1&3\end{bmatrix}=A \ \checkmark$$
+
+### Eigenspace & multiplicity
+
+$$E_\lambda=\ker(A-\lambda I)=\{x: Ax=\lambda x\} \qquad\text{— \textbf{not} necessarily the span of only one vector}$$
+
+**Non-uniqueness:** if $v$ is an eigenvector so is every $cv$, since $A(cv)=c\,Av=c\lambda v=\lambda(cv)$.
+
+| $\text{gm}(\lambda_i)$ | # linearly independent eigenvectors $=\dim(E_{\lambda_i})$ |
+|---|---|
+| $\text{am}(\lambda_i)$ | # roots of $p_A$ equal to $\lambda_i$ |
+| **Always** | $\boxed{1\le\text{gm}(\lambda_i)\le\text{am}(\lambda_i)}$ |
+
+### ⭐ The contrast pair — same $p_A$, opposite verdicts
+
+$$B=\begin{bmatrix}2&0\\0&2\end{bmatrix}:\ (2-\lambda)^2,\ \text{am}=2.\ \ (B-2I)x=\mathbf 0 \ \forall x \Rightarrow E_2=\mathbb{R}^2,\ \text{gm}=2 \ \Rightarrow \text{diagonalizable}$$
+
+$$C=\begin{bmatrix}2&0\\1&2\end{bmatrix}:\ (2-\lambda)^2,\ \text{am}=2.\ \ x_1=0 \Rightarrow E_2=\text{span}\left\{\begin{bmatrix}0\\1\end{bmatrix}\right\},\ \text{gm}=1 \ \Rightarrow \textbf{defective}$$
+
+### Defective & diagonalizable
+
+$A$ is **defective** if it has fewer than $n$ linearly independent eigenvectors. Eigenvectors for **distinct** eigenvalues are independent, so if any $\lambda_i$ has $\text{gm}<\text{am}$, $A$ is defective.
+
+$$\boxed{\text{defective} \iff \text{no eigenbasis} \iff \text{not diagonalizable}}$$
+
+**Eigenbasis** = a basis of $\mathbb{R}^n$ consisting entirely of eigenvectors of $A$.
+
+$A$ is **diagonalizable** if $\exists$ invertible $P$ with $D=P^{-1}AP$ diagonal. Stack eigenvectors as columns:
+
+$$AP=PD \iff A=PDP^{-1} \qquad P \text{ invertible} \iff \text{full column rank} \iff \text{eigenbasis exists}$$
+
+⭐ **$n$ distinct eigenvalues ⟹ diagonalizable** (sufficient, **not** necessary).
+⭐ **A symmetric matrix can always be diagonalized.**
+
+**Eigendecomposition properties:**
+
+$$A^k=PD^kP^{-1}=P\,\text{diag}(\lambda_1^k,\dots,\lambda_n^k)\,P^{-1} \qquad \det(A)=\det(D)=\prod_{i=1}^n d_{ii}$$
+
+### ⭐ Eigenvalue identities
+
+| If $Ax=\lambda x$ then | Why |
+|---|---|
+| $\lambda^2$ eigenvalue of $A^2$ | $A^2x=A(\lambda x)=\lambda^2x$ |
+| $\lambda^{-1}$ eigenvalue of $A^{-1}$ | $A^{-1}Ax=\lambda A^{-1}x \Rightarrow A^{-1}x=\tfrac1\lambda x$ |
+| $\lambda+1$ eigenvalue of $A+I$ | $Ax+x=(\lambda+1)x$ |
+| $(\lambda-\alpha)^{-1}$ for $(A-\alpha I)^{-1}$ | same eigenvector throughout |
+
+⭐ **Eigenvalues of $A^\top A$ and $AA^\top$ are $\ge0$:**
+
+$$A^\top Ax=\lambda x \Rightarrow x^\top A^\top Ax=\lambda x^\top x \Rightarrow \|Ax\|_2^2=\lambda\|x\|_2^2 \Rightarrow \lambda=\frac{\|Ax\|_2^2}{\|x\|_2^2}\ge0$$
+
+> **The $v^\top A^\top Av=\|Av\|^2$ move appears in at least four problems.** It converts a matrix expression into a norm, where you have theorems. Learn it as a reflex.
+
+---
+
+## A12. Quadratic forms & definiteness
+
+$$q_A(x)=x^\top Ax=\sum_{i=1}^n\sum_{j=1}^n a_{ij}x_ix_j, \qquad q_A:\mathbb{R}^n\to\mathbb{R}$$
+
+For **symmetric** $A\in\mathbb{R}^{n\times n}$:
+
+| | Condition | Eigenvalues |
+|---|---|---|
+| **PD** | $v^\top Av>0 \ \forall v\neq\mathbf 0_n$ | strictly positive |
+| **PSD** | $v^\top Av\ge0 \ \forall v\in\mathbb{R}^n$ | non-negative |
+| **ND** | $-A$ is PD | strictly negative |
+| **NSD** | $-A$ is PSD | non-positive |
+| **Indefinite** | mixed sign | mixed sign |
+
+> ND/NSD are defined **by negation** — don't memorise separate criteria, negate and reuse the PD/PSD test.
+
+⭐ For any $A\in\mathbb{R}^{n\times m}$: $\ A^\top A\in\mathbb{R}^{m\times m}$ and $AA^\top\in\mathbb{R}^{n\times n}$ are **symmetric and PSD — always**.
+
+$$\text{rk}(A)=m \ (\text{full \textbf{column} rank}) \Rightarrow A^\top A \text{ symmetric} + \textbf{PD}$$
+$$\text{rk}(A)=n \ (\text{full \textbf{row} rank}) \Rightarrow AA^\top \text{ symmetric} + \textbf{PD}$$
+
+**Worked:**
+
+$$A=\begin{bmatrix}2&1\\1&3\end{bmatrix}: \text{tr}=5,\det=5 \Rightarrow \lambda=\tfrac{5\pm\sqrt5}{2}>0 \Rightarrow \textbf{PD}$$
+$$B=\begin{bmatrix}0&0\\0&1\end{bmatrix}: \lambda\in\{1,0\} \Rightarrow \textbf{PSD not PD} \quad (x=(1,0)^\top \text{ gives } 0)$$
+$$C=-A \Rightarrow \textbf{ND} \qquad D=\begin{bmatrix}0&0\\0&-2\end{bmatrix}: \lambda\in\{0,-2\} \Rightarrow \textbf{NSD not ND}$$
+
+$$D=\text{diag}(4,1,0): \ \lambda=4,1,0,\ E_4=\text{span}\{e_1\},\ E_1=\text{span}\{e_2\},\ E_0=\text{span}\{e_3\} \Rightarrow \textbf{PSD not PD}$$
+
+---
+
+## A13. Decompositions
+
+### Diagonal matrices
+
+$$\det(D)=\prod_{i=1}^n c_i \qquad D^k=\text{diag}(c_1^k,\dots,c_n^k) \qquad D^{-1}=\text{diag}\!\left(\tfrac1{c_1},\dots,\tfrac1{c_n}\right) \text{ if } c_i\neq0$$
+
+### Cholesky
+
+⭐ A **symmetric positive definite** matrix factors as $\ A=LL^\top$, $L$ lower triangular with **positive** diagonal. $L$ is the **Cholesky factor**.
+
+$$\det(A)=\det(L)\det(L^\top)=\det(L)^2=\prod_{i=1}^n L_{ii}^2$$
+
+Requires **SPD** — not every real matrix has one.
+
+### Eigendecomposition
+
+$$A=PDP^{-1} \quad\text{requires } n \text{ independent eigenvectors}$$
+
+For **symmetric** $A$: $P$ orthogonal, so $A=PDP^\top$; eigenvalues real, eigenvectors orthogonal, never defective.
+
+### SVD
+
+For $A\in\mathbb{R}^{n\times m}$ of **rank $r$**:
+
+$$A=\underbrace{U}_{n\times n}\ \underbrace{\Sigma}_{n\times m}\ \underbrace{V^\top}_{m\times m}$$
+
+- $\Sigma=\text{diag}(\sigma_i)$ — zero everywhere except the leading diagonal
+- $\sigma_i=\sqrt{\lambda_i}$, the $\lambda_i$ being eigenvalues of $B=A^\top A$ — the **singular values**
+- Columns of $U$ = **left** singular vectors, $\ r_i=\dfrac{Ax_i}{\sigma_i}$
+- Columns of $V$ = **right** singular vectors = eigenvectors $x_i$ of $A^\top A$
+- ⭐ **$U$ and $V$ are orthogonal**; **exactly $r$ singular values are non-zero**
+
+**Why it always exists:** $B=A^\top A$ is symmetric and PSD, so (i) eigenvalues $\ge0$ — square roots are real — and (ii) eigenvectors form an orthonormal basis, giving the orthogonal $V$.
+
+⭐ $A^\top A$ and $AA^\top$ share the same **non-zero** eigenvalues (with multiplicities) — which is why SVD works from either side.
+
+---
+
+# Exam Reference — Calculus
+
+> **B1** Differentiation · **B2** Stationary Points · **B3** Convexity · **B4** Taylor · **B5** Partials & Gradient · **B6** Directional Derivative · **B7** Gradient Identities · **B8** Hessian · **B9** Jacobian & Chain Rule · **B10** Applications
+
+## ⚠️ B0. Layout convention
+
+**Treat the gradient as a ROW vector.** Both problem sets state this explicitly. Your lecture notes say it "can be written as a row or column vector" — but the exam convention is **row** (numerator layout).
+
+$$\nabla_x f=\frac{\mathrm{d}f}{\mathrm{d}x}=\begin{bmatrix}\dfrac{\partial f}{\partial x_1}&\cdots&\dfrac{\partial f}{\partial x_n}\end{bmatrix}\in\mathbb{R}^{1\times n}$$
+
+If a shape doesn't match, suspect the convention before suspecting the maths. To convert, transpose.
+
+---
+
+## B1. Differentiation
+
+**Difference quotient** and **derivative**:
+
+$$\frac{\delta y}{\delta x}=\frac{f(x+\delta x)-f(x)}{\delta x} \qquad\qquad \frac{\mathrm{d}f}{\mathrm{d}x}=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}$$
+
+The derivative is the **slope of the tangent line** at $x$.
+
+### Rules
+
+| | |
+|---|---|
+| **Power** | $f(x)=x^r \Rightarrow f'(x)=rx^{r-1}$ |
+| **Sum** | $(f+g)'=f'+g'$ |
+| **Product** | $(fg)'=f'g+fg'$ |
+| **Quotient** | $\left(\dfrac fg\right)'=\dfrac{f'g-fg'}{g^2}$ |
+| ⭐ **Chain** | $[g(f(x))]'=(g\circ f)'(x)=g'(f(x))\cdot f'(x)$ |
+
+**Worked:** $h(x)=\ln(x^2-2)$. Inner $f(x)=x^2-2$, $f'(x)=2x$; outer $g(u)=\ln u$, $g'(u)=1/u$.
+
+$$h'(x)=\frac{1}{x^2-2}\cdot 2x$$
+
+⭐ **Differentiable $\Rightarrow$ continuous.** The converse is false.
+
+---
+
+## B2. Stationary points
+
+A **stationary point** is a point in the domain where $f'(x)=0$.
+
+| | $f'$ behaviour | $f''$ |
+|---|---|---|
+| **Local max** | positive → negative | $f''(x)<0$ — *concave* |
+| **Local min** | negative → positive | $f''(x)>0$ — *convex* |
+| **Inflection** | pos → pos, or neg → neg | $f''(x)=0$ **and sign change** around $x$ |
+
+⭐ **Second-derivative test:** $f'(x_0)=0$ and $f''(x_0)>0$ ⟹ **strict local minimum**.
+
+> ⚠️ **$f''(x)=0$ is inconclusive** and not necessarily an inflection point. Counterexample $f(x)=x^4$ at $x=0$: $f'=4x^3=0$, $f''=12x^2=0$ — yet it's a strict **minimum**. You need a **sign change** in $f''$ for an inflection point.
+
+---
+
+## B3. Convexity
+
+Let $f:X\subseteq\mathbb{R}^n\to\mathbb{R}$. For all $0\le\lambda\le1$ and all $x_1,x_2\in X$:
+
+$$\textbf{Convex:}\quad f(\lambda x_1+(1-\lambda)x_2)\le\lambda f(x_1)+(1-\lambda)f(x_2)$$
+$$\textbf{Concave:}\quad f(\lambda x_1+(1-\lambda)x_2)\ge\lambda f(x_1)+(1-\lambda)f(x_2)$$
+
+*Convex = the chord lies **above** the curve (bowl). Concave = chord **below** (dome).*
+
+```
+   CONVEX                      CONCAVE
+   λf(x₁)+(1-λ)f(x₂)              ╭────╮
+    ●────────────●              ╱        ╲
+     ╲__________╱              ●          ●
+      f(λx₁+(1-λ)x₂)          chord below curve
+   chord above curve
+```
+
+| ⭐ Test | |
+|---|---|
+| $f''(x)\ge0$ on an interval | $\Rightarrow$ $f$ **convex** there |
+| $f$ differentiable and convex | $\Rightarrow$ $f'$ is **nondecreasing** |
+| Hessian PSD (multivariate) | $\Rightarrow$ convex |
+| Hessian **PD** | $\Rightarrow$ **strictly** convex ⟹ unique global minimum |
+
+**Worked:** $h(x)=\log(1+e^{ax})$ — is it convex?
+
+$$h'(x)=\frac{ae^{ax}}{1+e^{ax}}=a\,\sigma(ax), \qquad h''(x)=a^2\sigma(ax)\big(1-\sigma(ax)\big)\ \ge 0$$
+
+since $\sigma\in(0,1)$. **Convex** (strictly if $a\neq0$).
+
+---
+
+## B4. Taylor expansion
+
+### The idea
+
+Polynomials are easy to work with, so build one that matches $f$ near a point $x_0$.
+
+From the definition of the derivative:
+
+$$f'(x_0)\approx\frac{f(x_0+h)-f(x_0)}{h} \ \Big\vert\cdot h \quad\Rightarrow\quad f(x_0+h)\approx f(x_0)+h f'(x_0)$$
+
+Setting $x_0+h=x$:
+
+$$\boxed{T_1(x)=f(x_0)+f'(x_0)(x-x_0)}$$
+
+Note $T_1'(x_0)=f'(x_0)$ — the polynomial matches the function's derivative at $x_0$. Higher degrees extend that: weight the $k$-th derivative by $(x-x_0)^k$ and ensure $T_n^{(k)}(x_0)=f^{(k)}(x_0)$ for all $k=1,\dots,n$.
+
+### Definition
+
+$$\boxed{T_n(x)=\sum_{k=0}^{n}\frac{f^{(k)}(x_0)}{k!}\,(x-x_0)^k}$$
+
+Expanded: $\ f(x_0)+f'(x_0)(x-x_0)+\tfrac12 f''(x_0)(x-x_0)^2+\tfrac1{2\cdot3}f'''(x_0)(x-x_0)^3+\cdots$
+
+**Factorial:** $x!=1\cdot2\cdot3\cdots x$, with $\ 0!=1!=1$.
+
+> ⚠️ **A Taylor polynomial approximates $f$ locally — it does not equal $f$ everywhere.** Equality holds only when $f$ is itself a polynomial of degree $k\le n$.
+
+### Worked — $f(x)=\ln(1+x)$ at $x_0=0$
+
+Derivatives at 0: $f(0)=0$, $f'(0)=1$, $f''(0)=-1$, $f^{(3)}(0)=2$.
+
+$$T_3(x)=x-\frac{x^2}{2}+\frac{x^3}{3}$$
+
+General: $f^{(k)}(x)=(-1)^{k-1}(k-1)!/(1+x)^k$, so
+
+$$T_n(x)=\sum_{k=1}^n\frac{f^{(k)}(0)}{k!}x^k=\sum_{k=1}^n(-1)^{k-1}\frac{x^k}{k}$$
+
+### Worked — softplus, $f(t)=\log(1+\exp(a+bt))$ at $t_0=0$
+
+$\log(1+e^x)$ is called **softplus**: for large negative $x$ it $\to0$; for large positive $x$ it $\to x$.
+
+Let $z(t)=a+bt$, so $z'(t)=b$. With the **sigmoid**
+
+$$\sigma(z)=\frac{e^{z}}{1+e^{z}}=\frac{1}{1+e^{-z}}, \qquad \lim_{z\to\infty}\sigma=1,\ \ \lim_{z\to-\infty}\sigma=0$$
+
+$$\boxed{\sigma'=\sigma(1-\sigma)} \qquad\text{since}\qquad 1-\sigma(z)=\frac{e^{-z}}{1+e^{-z}}$$
+
+Derivatives:
+
+$$f'(t)=b\,\sigma(z(t))$$
+$$f''(t)=b^2\sigma(z(t))\big(1-\sigma(z(t))\big)$$
+$$f'''(t)=b^3\sigma(z(t))\big(1-\sigma(z(t))\big)\big(1-2\sigma(z(t))\big)$$
+
+At $t_0=0$, writing $S=\sigma(a)$:
+
+$$T_3(t)=\log(1+e^a)+bS\,t+\tfrac{1}{2!}b^2S(1-S)\,t^2+\tfrac{1}{3!}b^3S(1-S)(1-2S)\,t^3$$
+
+### Multivariate (to second order)
+
+$$f(x)\approx f(x_0)+\nabla f(x_0)(x-x_0)+\tfrac12(x-x_0)^\top H(x_0)(x-x_0)$$
+
+---
+
+## B5. Partial derivatives & gradient
+
+$$\frac{\partial f}{\partial x_i}=\lim_{h\to0}\frac{f(x_1,\dots,x_i+h,\dots,x_n)-f(x)}{h}$$
+
+> $\dfrac{\partial f}{\partial x_i}(x)$ describes the **local slope at $x$ when moving parallel to $x_i$**. Vary one variable, treat the others as constant.
+
+The **gradient** is the vector of all $n$ partial derivatives:
+
+$$\nabla_x f=\text{grad} f=\frac{\mathrm{d}f}{\mathrm{d}x}=\begin{bmatrix}\dfrac{\partial f}{\partial x_1}&\cdots&\dfrac{\partial f}{\partial x_n}\end{bmatrix}$$
+
+⭐ **At a stationary point the entire gradient vector equals the zero vector.**
+
+⭐ **The gradient points in the direction of steepest ASCENT.** Steepest *descent* is $-\nabla f$. (Common T/F trap.)
+
+**Example:** $f(x_1,x_2)=x_1^2+x_2^2 \Rightarrow \nabla f=[2x_1,\ 2x_2]$; at $(0,0)$, $\nabla f=[0,0]$ — stationary.
+
+> ⚠️ $\nabla f(x_0)=\mathbf 0$ does **not** imply a local extremum. Counterexample $f(x,y)=x^2-y^2$ at $(0,0)$ — a **saddle**.
+
+---
+
+## B6. Directional derivative
+
+If $f$ is differentiable at $x$, the directional derivative along any vector $v$ is
+
+$$\boxed{D_vf(x)=\left\langle\nabla f(x),\ \frac{v}{\|v\|}\right\rangle}$$
+
+For a **unit** vector $u$ this is simply $\ D_uf(x)=\nabla f(x)\,u$ (row times column).
+
+**Worked.** $f(x_1,x_2)=x_1^2+x_2^2$, $\ \nabla f=[2x_1,2x_2]$, at the point $(1,1)$:
+
+*Direction $v=(3,1)^\top$*, $\|v\|=\sqrt{10}$:
+
+$$D_vf=\tfrac1{\sqrt{10}}\big(2x_1\cdot3+2x_2\cdot1\big)=\tfrac1{\sqrt{10}}(6x_1+2x_2) \ \overset{(1,1)}{=}\ \tfrac{8}{\sqrt{10}}\approx2.5$$
+
+*Direction $v=\nabla f$:*
+
+$$\left\langle\nabla f,\frac{\nabla f}{\|\nabla f\|}\right\rangle=\frac{\|\nabla f\|^2}{\|\nabla f\|}=\|\nabla f\| \ \overset{(1,1)}{=}\ \sqrt{2^2+2^2}=\sqrt8\approx2.8$$
+
+**Larger — because the gradient direction is the steepest one.**
+
+### ⭐ Why the gradient is steepest — via Cauchy–Schwarz
+
+Let $g=\nabla f(x_0)$. For any unit $u$:
+
+$$\lvert g\cdot u\rvert\le\|g\|\,\|u\|=\|g\| \qquad\text{(Cauchy–Schwarz)}$$
+
+so $\ D_uf(x_0)=g\cdot u\le\lvert g\cdot u\rvert\le\|g\|$.
+
+Equality needs **both** inequalities tight: equality in Cauchy–Schwarz forces $u=\pm g/\|g\|$, and $g\cdot u=\lvert g\cdot u\rvert$ forces the **plus** sign. Hence
+
+$$D_uf(x_0)=\|\nabla f(x_0)\| \iff u=\frac{\nabla f(x_0)}{\|\nabla f(x_0)\|} \qquad (\nabla f\neq\mathbf 0)$$
+
+The minimum $-\|\nabla f\|$ is attained at $u=-\nabla f/\|\nabla f\|$ — steepest descent.
+
+If $\nabla f(x_0)=\mathbf 0$, then $D_uf(x_0)=0$ for every unit $u$: **flat to first order in all directions**.
+
+---
+
+## B7. ⭐ Gradient identities
+
+With $x,b\in\mathbb{R}^n$ and $A\in\mathbb{R}^{n\times n}$ (row-vector results):
+
+| $f(x)$ | $\nabla_x f$ |
+|---|---|
+| $x^\top b=b^\top x$ | $b^\top$ |
+| $x^\top b$, wrt $b$ | $x^\top$ |
+| $x^\top A x$ | $x^\top(A+A^\top)$ |
+| $x^\top A x$, $A$ **symmetric** | $2x^\top A$ |
+| $\|x\|_2^2=x^\top x$ | $2x^\top$ |
+| $(y-Xb)^\top(y-Xb)$, wrt $b$ | $-2y^\top X+2b^\top X^\top X$ |
+
+**Derivation of $\nabla(x^\top Ax)$.** With $f(x)=x^\top Ax=\sum_i\sum_j a_{ij}x_ix_j$:
+
+$$\frac{\partial\,x^\top Ax}{\partial x_1}=2a_{11}x_1+\sum_{j=2}^n a_{1j}x_j+\sum_{i=2}^n a_{i1}x_i=\sum_{j=1}^n a_{1j}x_j+\sum_{i=1}^n a_{i1}x_i$$
+
+Those two sums are $x^\top$ times the first **row** and first **column** of $A$. Stacking over all components:
+
+$$\nabla f=x^\top(A^\top+A)=x^\top(A+A^\top) \qquad\text{(denominator layout: } (A+A^\top)x)$$
+
+---
+
+## B8. Hessian
+
+For $x\in\mathbb{R}^n$ and $f:\mathbb{R}^n\to\mathbb{R}$, the Hessian is the $n\times n$ matrix of second partials:
+
+$$H=\begin{bmatrix}\dfrac{\partial^2f}{\partial x_1^2}&\dfrac{\partial^2f}{\partial x_1\partial x_2}&\cdots\\[6pt] \dfrac{\partial^2f}{\partial x_2\partial x_1}&\ddots&\\[6pt] \vdots& &\dfrac{\partial^2f}{\partial x_n^2}\end{bmatrix}$$
+
+**Example:** $f(x_1,x_2)=x_1^2+x_2^2 \Rightarrow H=\begin{bmatrix}2&0\\0&2\end{bmatrix}$
+
+$H$ is **symmetric** — by **Schwarz's theorem**, $\dfrac{\partial^2f}{\partial x_i\partial x_j}=\dfrac{\partial^2f}{\partial x_j\partial x_i}$ when the second partials are continuous. So the spectral theorem applies and every eigenvalue test from A12 is available.
+
+### ⭐ Definiteness of the Hessian is the whole point
+
+At a stationary point ($\nabla f=\mathbf 0$):
+
+| $H$ | Verdict |
+|---|---|
+| **PD** | strict local **minimum** |
+| **ND** | strict local **maximum** |
+| **Mixed-sign** eigenvalues | **saddle point** |
+| **PSD / NSD** | **inconclusive** |
+
+> Globally: $H$ PSD everywhere ⟹ $f$ convex ⟹ every stationary point is a **global** minimum. $H$ PD everywhere ⟹ **strictly** convex ⟹ the minimum is **unique**.
+
+**Worked (PS3).** $f(x_1,x_2)=x_1^2+2x_1x_2+3x_2^2-4x_1+6$
+
+$$\nabla f=[\,2x_1+2x_2-4,\ \ 2x_1+6x_2\,]$$
+
+Setting $\nabla f=\mathbf 0$: $\ x_1=-3x_2$, then $-6x_2+2x_2-4=0 \Rightarrow x_2=-1,\ x_1=3$. Unique stationary point $(3,-1)$.
+
+$$H=\begin{bmatrix}2&2\\2&6\end{bmatrix}: \ \ \chi_H(\lambda)=(2-\lambda)(6-\lambda)-4=\lambda^2-8\lambda+8 \Rightarrow \lambda=4\pm2\sqrt2>0$$
+
+Both positive ⟹ $H\succ0$ ⟹ **strict local minimum** at $(3,-1)$.
+
+*(Faster: $\text{tr}=8>0$, $\det=12-4=8>0$ ⟹ PD. Or Sylvester: $2>0$ and $8>0$.)*
+
+Directional derivative there: $\nabla f(3,-1)=[0,0]$, so $D_uf(3,-1)=0$ for every $u$.
+
+---
+
+## B9. Jacobian & the chain rule
+
+### Definition
+
+The collection of all first-order partial derivatives of a **vector-valued** function $f:\mathbb{R}^n\to\mathbb{R}^m$ is the **Jacobian**:
+
+$$J_{f(x)}=\begin{bmatrix}\dfrac{\partial f_1(x)}{\partial x_1}&\cdots&\dfrac{\partial f_1(x)}{\partial x_n}\\[8pt]\vdots& &\vdots\\[8pt]\dfrac{\partial f_m(x)}{\partial x_1}&\cdots&\dfrac{\partial f_m(x)}{\partial x_n}\end{bmatrix}\in\mathbb{R}^{m\times n}, \qquad J_{(i,j)}=\frac{\partial f_i(x)}{\partial x_j}$$
+
+**Row $i$ is the gradient of $f_i$.** The gradient is just the Jacobian of a scalar-valued function ($m=1$).
+
+> ⭐ **Numerator layout**, with gradients as row vectors — as in the MML book. $\ J_{\text{numerator}}=J_{\text{denominator}}^\top$.
+
+### Shapes
+
+| Object | For | Shape |
+|---|---|---|
+| **Gradient** $\nabla f$ | $f:\mathbb{R}^n\to\mathbb{R}$ | $1\times n$ (row) |
+| **Jacobian** $J_g$ | $g:\mathbb{R}^n\to\mathbb{R}^m$ | $m\times n$ |
+| **Hessian** $H$ | $f:\mathbb{R}^n\to\mathbb{R}$ | $n\times n$ |
+
+### ⭐ The Jacobian of a linear map is the matrix itself
+
+Let $A\in\mathbb{R}^{3\times4}$, $x\in\mathbb{R}^4$, $f(x)=Ax$, so $f:\mathbb{R}^4\to\mathbb{R}^3$.
+
+Writing $A=[c_1\ c_2\ c_3\ c_4]$ by columns and $A=[r_1^\top;\ r_2^\top;\ r_3^\top]$ by rows:
+
+$$Ax=x_1c_1+x_2c_2+x_3c_3+x_4c_4 =\begin{bmatrix}r_1^\top x\\r_2^\top x\\r_3^\top x\end{bmatrix} =\begin{bmatrix}\sum_{i=1}^4 a_{1i}x_i\\\sum_{i=1}^4 a_{2i}x_i\\\sum_{i=1}^4 a_{3i}x_i\end{bmatrix}$$
+
+Differentiating row $k$ with respect to $x_j$ gives $a_{kj}$, so
+
+$$J_{f(x)}=\begin{bmatrix}\nabla_xf_1(x)\\\nabla_xf_2(x)\\\nabla_xf_3(x)\end{bmatrix}=\begin{bmatrix}a_{11}&a_{12}&a_{13}&a_{14}\\a_{21}&a_{22}&a_{23}&a_{24}\\a_{31}&a_{32}&a_{33}&a_{34}\end{bmatrix}=A$$
+
+$$\boxed{\nabla_x(Ax)=A} \qquad\text{— the matrix analogue of } \tfrac{\mathrm d}{\mathrm dx}(ax)=a$$
+
+### Chain rule
+
+Single variable: $\ [g(f(x))]'=g'(f(x))f'(x)$
+
+⭐ **Matrix form** — for $f=h\circ g$:
+
+$$\boxed{\nabla f(x)=\nabla h\big(g(x)\big)\,J_g(x)}$$
+
+Shapes: $(1\times m)(m\times n)=(1\times n)$ ✓ — **multiply the Jacobians, right to left.**
+
+### ⭐ Chain rule as matrix multiplication — parametric case
+
+Consider $f(x_1,x_2)$ where $x_1$ and $x_2$ are themselves functions of $t$:
+
+$$\nabla_tf=\nabla_xf\cdot J_{x(t)}=\begin{bmatrix}\dfrac{\partial f}{\partial x_1}&\dfrac{\partial f}{\partial x_2}\end{bmatrix}\begin{bmatrix}\dfrac{\partial x_1(t)}{\partial t}\\[8pt]\dfrac{\partial x_2(t)}{\partial t}\end{bmatrix}=\frac{\partial f}{\partial x_1}\frac{\partial x_1}{\partial t}+\frac{\partial f}{\partial x_2}\frac{\partial x_2}{\partial t}$$
+
+The matrix product **is** the sum-over-paths rule — one term per intermediate variable.
+
+**Worked.** $f(x_1,x_2)=x_1^2+2x_2$ with $x_1(t)=\sin t$, $x_2(t)=\cos t$, so $f(t)=\sin^2t+2\cos t$.
+
+$$\nabla_xf=[\,2x_1\ \ 2\,], \qquad J_{x(t)}=\begin{bmatrix}\cos t\\-\sin t\end{bmatrix}$$
+
+$$\nabla_tf=[\,2x_1\ \ 2\,]\begin{bmatrix}\cos t\\-\sin t\end{bmatrix}=2\sin t\cos t-2\sin t$$
+
+**Worked (PS5) — composition.** $g(x_1,x_2)=\begin{bmatrix}x_1^2+x_2\\\sin(x_1x_2)\end{bmatrix}$, $\ h(y_1,y_2)=y_1^3+2y_2$, $\ f=h\circ g$.
+
+$$J_g(x)=\begin{bmatrix}2x_1&1\\x_2\cos(x_1x_2)&x_1\cos(x_1x_2)\end{bmatrix}, \qquad \nabla h(y)=[\,3y_1^2,\ 2\,]$$
+
+$$\nabla f(x)=\big[\,3(x_1^2+x_2)^2\cdot2x_1+2x_2\cos(x_1x_2),\ \ 3(x_1^2+x_2)^2+2x_1\cos(x_1x_2)\,\big]$$
+
+At $(1,2)$: $\ x_1^2+x_2=3$, $\cos(x_1x_2)=\cos2$, so $\ \nabla f(1,2)=[\,54+4\cos2,\ \ 27+2\cos2\,]$
+
+With $u=\tfrac1{\sqrt5}(1,2)^\top$: $\ D_uf(1,2)=\nabla f(1,2)\,u=\tfrac1{\sqrt5}\big(108+8\cos2\big)$
+
+---
+
+## B10. Applications
+
+### ⭐ Least squares by calculus (PS7)
+
+$$\text{SSR}(\beta)=\sum_{i=1}^n(y_i-x_i^\top\beta)^2=(y-X\beta)^\top(y-X\beta)$$
+
+**Expand** — note $y^\top X\beta$ is a **scalar**, so it equals its own transpose $\beta^\top X^\top y$:
+
+$$\text{SSR}(\beta)=y^\top y-y^\top X\beta-\beta^\top X^\top y+\beta^\top X^\top X\beta=y^\top y-2y^\top X\beta+\beta^\top X^\top X\beta$$
+
+**Gradient** (row vector):
+
+$$\nabla_\beta\text{SSR}(\beta)=-2y^\top X+2\beta^\top X^\top X$$
+
+Set to zero and transpose:
+
+$$\boxed{X^\top X\hat\beta=X^\top y}$$
+
+**Hessian:**
+
+$$H=\nabla^2_\beta\text{SSR}=2X^\top X, \qquad z^\top Hz=2(Xz)^\top(Xz)=2\|Xz\|_2^2\ \ge0$$
+
+So $H$ is **always PSD** ⟹ SSR is always convex. It is **PD** iff $\|Xz\|_2^2>0$ for all $z\neq\mathbf 0$, i.e. iff $\ker(X)=\{\mathbf 0\}$, i.e. iff the **columns of $X$ are linearly independent** ($\text{rk}(X)=p$). Then $X^\top X$ is PD, hence invertible:
+
+$$\boxed{\hat\beta=(X^\top X)^{-1}X^\top y}$$
+
+**And the payoff:** $H$ PD everywhere ⟹ SSR **strictly convex** ⟹ the stationary point $\hat\beta$ is the **unique global minimum**.
+
+> **If the columns are dependent:** some $z\neq\mathbf 0$ has $Xz=\mathbf 0$, so $z^\top X^\top Xz=0$ — $X^\top X$ is PSD but **not** PD, hence singular, and $(X^\top X)^{-1}$ doesn't exist. SSR is still convex so every stationary point is still a global minimum, but the minimiser is **not unique**: $X(\hat\beta+z)=X\hat\beta$, so $\text{SSR}(\hat\beta+z)=\text{SSR}(\hat\beta)$.
+
+**Note the two routes agree.** Geometry (§A7: residual $\perp$ column space) and calculus (gradient $=0$) give the identical normal equations.
+
+### ⭐ Gradient descent & backpropagation (PS8)
+
+Logistic regression on one example: $\ z=w^\top x$, $\ p=\sigma(z)=\dfrac{1}{1+e^{-z}}$, $\ L=-[y\log p+(1-y)\log(1-p)]$
+
+$$\frac{\partial L}{\partial p}=-\frac yp+\frac{1-y}{1-p}, \qquad \frac{\partial p}{\partial z}=p(1-p), \qquad \frac{\partial z}{\partial w}=x^\top$$
+
+Chain them:
+
+$$\frac{\partial L}{\partial w}=\frac{\partial L}{\partial p}\frac{\partial p}{\partial z}\frac{\partial z}{\partial w}=\left(-\frac yp+\frac{1-y}{1-p}\right)p(1-p)\,x^\top=[-y(1-p)+(1-y)p]\,x^\top$$
+
+$$\boxed{\frac{\partial L}{\partial w}=(p-y)\,x^\top}$$
+
+All the $p$'s cancel — a strikingly clean result.
+
+### ⭐ Gradient descent
+
+$$\boxed{w_{\text{new}}=w-\eta\left(\frac{\partial L}{\partial w}\right)^\top}$$
+
+Step **opposite** to the gradient, because $+\nabla L$ points uphill (B5). $\eta>0$ is the **learning rate**; the problem set uses $\eta=1$.
+
+The transpose appears because $\partial L/\partial w$ is a **row** vector under the course convention, while $w$ is a column.
+
+**Worked:** $x=(1,2)^\top$, $w=(0,0)^\top$, $y=1$.
+
+$$z=0,\quad p=\tfrac12,\quad L=-\log\tfrac12=\log2\approx0.693$$
+$$\frac{\partial L}{\partial w}=-\tfrac12[1\ \ 2]=[-\tfrac12\ \ -1] \Rightarrow w_{\text{new}}=\begin{bmatrix}0\\0\end{bmatrix}-\begin{bmatrix}-\tfrac12\\-1\end{bmatrix}=\begin{bmatrix}\tfrac12\\1\end{bmatrix}$$
+$$z_{\text{new}}=\tfrac12+2=\tfrac52,\quad p_{\text{new}}=\tfrac{1}{1+e^{-5/2}}\approx0.924,\quad L_{\text{new}}\approx0.079 < 0.693 \ \checkmark$$
+
+$p$ moved toward $y=1$ and the loss fell. **Repeated application of the chain rule through many intermediate functions is backpropagation.**
+
+---
+
+# T1. Fast Verdict Toolkit
+
+## Minimum sufficient computation
+
+**Disproving is cheap; proving is expensive. Always try to break the statement first.**
+
+| To show… | Do **not** | Do this |
+|---|---|---|
+| $A$ is **not** invertible | compute $A^{-1}$ | find $\det A=0$, or spot a dependent row/column |
+| $A$ is **not** PD | compute all eigenvalues | find **one** $x$ with $x^\top Ax\le0$ — try $e_1,e_2$ |
+| Vectors are **dependent** | full elimination | spot **one** relation, e.g. $v_3=v_1+v_2$ |
+| $S$ is **not** a basis | check independence | **count** vs $\dim V$ first |
+| $A$ is **not** diagonalizable | find all eigenvectors | find one $\lambda$ with $\text{gm}<\text{am}$ |
+| A claim is **false** | prove the general case | **one** counterexample |
+| $\lambda=0$ is an eigenvalue | solve $p_A(\lambda)=0$ | check $\det A=0$ |
+
+## ⭐ 2×2 speed table — eigenvalue signs without eigenvalues
+
+$$\text{tr}(A)=\lambda_1+\lambda_2 \qquad \det(A)=\lambda_1\lambda_2$$
+
+| $\det$ | $\text{tr}$ | Eigenvalues | Verdict (symmetric $A$) |
+|---|---|---|---|
+| $>0$ | $>0$ | both $+$ | **PD** |
+| $>0$ | $<0$ | both $-$ | **ND** |
+| $<0$ | any | opposite signs | **indefinite** |
+| $=0$ | $>0$ | one $0$, one $+$ | **PSD** not PD |
+| $=0$ | $<0$ | one $0$, one $-$ | **NSD** not ND |
+
+## ⭐ Sylvester's criterion
+
+**PD $\iff$ all *leading* principal minors $>0$.** For $\begin{bmatrix}a&b\\b&c\end{bmatrix}$: $\ a>0$ **and** $ac-b^2>0$.
+
+3×3: $\ a_{11}>0$, $\ \det\begin{bmatrix}a_{11}&a_{12}\\a_{21}&a_{22}\end{bmatrix}>0$, $\ \det A>0$.
+
+- **ND**: apply to $-A$
+- **PSD**: needs **all** principal minors $\ge0$, not just leading ⚠️
+- Fastest PD disproof: **any diagonal entry $\le0$**, since $e_i^\top Ae_i=a_{ii}$
+
+## Read-it-off shortcuts
+
+| Situation | Shortcut |
+|---|---|
+| Triangular / diagonal | eigenvalues **are** the diagonal; $\det=\prod$ diagonal |
+| A row or column all zeros | $\det=0$, singular, $\lambda=0$ |
+| Two rows/columns proportional | $\det=0$ |
+| Symmetric | real eigenvalues, orthogonal eigenvectors, never defective |
+| $P^2=P$ | eigenvalues only $0,1$; $\text{rk}=\text{tr}$ |
+| Orthogonal $Q$ | $Q^{-1}=Q^\top$, $\det=\pm1$, $\|Qx\|=\|x\|$ |
+| $\lambda$ of $A^2,A^{-1},A+I$ | $\lambda^2,\ \lambda^{-1},\ \lambda+1$ — same eigenvector |
+
+## Test vectors & matrices to try first
+
+$$e_1,\quad e_2,\quad \begin{bmatrix}1\\1\end{bmatrix},\quad \begin{bmatrix}1\\-1\end{bmatrix} \qquad\qquad I,\ \mathbf 0,\ \begin{bmatrix}0&1\\0&0\end{bmatrix},\ \begin{bmatrix}1&1\\0&2\end{bmatrix},\ \begin{bmatrix}3&1\\0&3\end{bmatrix},\ \text{diag}(1,0)$$
+
+## Quantifier discipline
+
+| Word | Means | To disprove |
+|---|---|---|
+| "any" / "always" / "every" | $\forall$ | **one** counterexample |
+| "there exists" / "some" | $\exists$ | show it's impossible |
+| "iff" | both directions | break **either** direction |
+| "sufficient" | $P\Rightarrow Q$ | find $P$ true, $Q$ false |
+| "necessary" | $Q\Rightarrow P$ | find $Q$ true, $P$ false |
+
+> **Most common trap:** a one-way implication stated as an equivalence. "Distinct eigenvalues ⟹ diagonalizable" is **true**; "diagonalizable ⟹ distinct eigenvalues" is **false** ($I$).
+
+## ⭐ Worked — a T/F item that needs computation
+
+> $\forall t\in\mathbb{R}$, $\ w_t=(3,3,t)^\top\in W=\text{span}\{a,b\}$, $\ a=(1,2,1)^\top$, $b=(2,1,0)^\top$
+
+$$w_t=sa+rb \Rightarrow \begin{cases}s+2r=3\\2s+r=3\\s=t\end{cases}$$
+
+The **first two** equations pin down $s,r$; the third merely reads off $t$.
+
+$$s=1,\ r=1 \Rightarrow t=1 \quad\text{only} \qquad\Longrightarrow\qquad \textbf{False}$$
+
+---
+
+# T2. True/False Verdict Bank
+
+## Linear Algebra Part 1, Problem 1
+
+| | Claim | | Justification / counterexample |
+|---|---|---|---|
+| a | Union of two subspaces is a subspace | **F** | x-axis $\cup$ y-axis: $(1,0)+(0,1)=(1,1)\notin$. Only closed if one contains the other |
+| b | Intersection of any family of subspaces contains $\mathbf 0$ | **T** | Every subspace contains $\mathbf 0$ |
+| c | Any $n{+}1$ vectors in $\mathbb{R}^n$ are independent | **F** | More vectors than dimensions ⟹ **dependent** |
+| d | $S$ spans $V$, $s_i\in\mathbb{R}^n$, $n=\dim V$ ⟹ basis | **F** | Says nothing about $\lvert S\rvert$; spanning alone ≠ independent |
+| e | $\|x\|_2=\|y\|_2 \Rightarrow \langle x,y\rangle=\|x\|_2\|y\|_2$ | **F** | Needs $\cos\omega=1$. $(1,0)\perp(0,1)$, both norm 1 |
+| f | Cauchy–Schwarz equality $\iff$ linearly dependent | **T** | $y=\lambda x \Rightarrow \lvert\langle x,\lambda x\rangle\rvert=\lvert\lambda\rvert\|x\|_2^2=\|x\|_2\|y\|_2$ |
+| g | $T$ injective $\Rightarrow \dim(\text{im}\,T)=\dim V$ | **T** | $\ker=\{\mathbf 0\}$ + rank–nullity |
+| h | $T$ surjective $\Rightarrow \ker T=\{\mathbf 0\}$ | **F** | Only if $\dim V=\dim W$. P9 is the counterexample |
+| i | $\forall t$, $(3,3,t)^\top\in\text{span}\{(1,2,1)^\top,(2,1,0)^\top\}$ | **F** | Only $t=1$ works |
+
+## Linear Algebra Part 2, Problem 1
+
+| | Claim | | Justification / counterexample |
+|---|---|---|---|
+| a | $\text{rk}(A)+\dim\ker(A)=n$ for $A\in\mathbb{R}^{m\times n}$ | **T** | Rank–nullity; $n$ = #columns = domain dimension |
+| b | $\text{tr}(AB)=\text{tr}(BA)$ | **T** | Cyclicity; holds even when $AB$, $BA$ differ in size |
+| c | $\text{rk}(A)$ = number of non-zero eigenvalues | **F** | $\begin{bmatrix}0&1\\0&0\end{bmatrix}$: rank 1, eigenvalues $0,0$ |
+| d | Diagonalizable $\Rightarrow$ symmetric | **F** | $\begin{bmatrix}1&1\\0&2\end{bmatrix}$: distinct eigenvalues, not symmetric |
+| e | $n$ distinct eigenvalues $\Rightarrow$ diagonalizable | **T** | Eigenvectors for distinct eigenvalues are independent |
+| f | $A^\top A$ is PD for any $A$ | **F** | Always **PSD**; PD iff full column rank |
+| g | Every real matrix has a Cholesky decomposition | **F** | Needs symmetric **positive definite** |
+| h | $\text{rk}(A)=\text{rk}(A^\top)$ | **T** | Row rank = column rank |
+| i | Eigenvalues sum to $\text{tr}(A)$ | **T** | With algebraic multiplicities |
+| j | Non-zero eigenvalues of $A^\top A$ and $AA^\top$ coincide | **T** | Including multiplicities — basis of SVD |
+| k | Unit $u$: $P=uu^\top$ projects onto $\text{span}\{u\}$, $P^2=P$ | **T** | Denominator $u^\top u=1$ |
+
+## Calculus, Problem 1
+
+| | Claim | | Justification / counterexample |
+|---|---|---|---|
+| a | Differentiable at $x_0$ $\Rightarrow$ continuous at $x_0$ | **T** | Follows from the definition of the derivative. **Converse false** ($\lvert x\rvert$ at 0) |
+| b | Differentiable + convex $\Rightarrow$ $f'$ nondecreasing | **T** | A differentiable convex function has monotone nondecreasing derivative |
+| c | $f''(x)\ge0$ on an interval $\Rightarrow$ convex there | **T** | Standard second-derivative characterisation |
+| d | $f'(x_0)=0$ and $f''(x_0)>0$ $\Rightarrow$ strict local min | **T** | Second-derivative test |
+| e | $\nabla f(x_0)=\mathbf 0$ $\Rightarrow$ $x_0$ is a local extremum | **F** | $f(x,y)=x^2-y^2$ at $(0,0)$ — a **saddle** |
+| f | $\nabla f(x_0)$ points in the direction of steepest **descent** | **F** | Steepest **ascent**; $-\nabla f$ is descent |
+| g | For unit $u$, $D_uf(x)=\nabla f(x)\,u$ (row gradient) | **T** | Definition of directional derivative |
+| h | $f\in C^{n+1}$ near $x_0$ $\Rightarrow$ degree-$n$ Taylor polynomial equals $f$ **everywhere** | **F** | Taylor approximates **locally**. Exact only if $f$ is a polynomial of degree $k\le n$ |
+
+## ⭐ Pocket counterexamples
+
+| Object | Kills the claim that… |
+|---|---|
+| $\begin{bmatrix}0&1\\0&0\end{bmatrix}$ | rank = # non-zero eigenvalues |
+| $\begin{bmatrix}1&1\\0&2\end{bmatrix}$ | diagonalizable ⟹ symmetric |
+| $\begin{bmatrix}2&0\\1&2\end{bmatrix}$ or $\begin{bmatrix}3&1\\0&3\end{bmatrix}$ | repeated eigenvalue ⟹ diagonalizable (defective) |
+| $I$ | diagonalizable ⟹ distinct eigenvalues |
+| x-axis $\cup$ y-axis | union of subspaces is a subspace |
+| $(1,0)$ and $(0,1)$ | equal norms ⟹ aligned |
+| $\text{diag}(1,0)$ | PSD ⟹ PD |
+| $f(x,y)=x^2-y^2$ at $(0,0)$ | $\nabla f=\mathbf 0$ ⟹ extremum (it's a saddle) |
+| $f(x)=x^4$ at $x=0$ | $f''=0$ ⟹ inflection point (it's a minimum) |
+| $f(x)=\lvert x\rvert$ at $x=0$ | continuous ⟹ differentiable |
+
+---
+
+# T3. Decision table
+
+| Asked | Do |
+|---|---|
+| Is this a subspace? | $\mathbf 0\in U$ **first** → closure under $+$ → closure under $\cdot$ (**try $\lambda=-1$**) |
+| Linearly independent? | count vs $n$ **first** → columns → REF → pivot in every column |
+| Basis + dimension of a span | columns → REF → pivot columns **of the ORIGINAL**; $\dim$ = #pivots |
+| Coordinate vector $[x]_B$ | basis as columns of $A$, augment $[A\mid x]$ → RREF |
+| Find $\ker$ | → RREF, parametrise free variables, one basis vector each |
+| Find $\text{im}$ | → REF, pivot columns of the original |
+| Injective? | pivot in every **column** |
+| Surjective? | pivot in every **row** |
+| Invertible? | square + $\det\neq0$ (then the whole chain fires) |
+| Cosine similarity | $\dfrac{\langle x,y\rangle}{\|x\|\|y\|}$ — dot, then both norms |
+| Project onto a line | $\lambda=\dfrac{b^\top x}{b^\top b}$, $\ P_\pi=\dfrac{bb^\top}{b^\top b}$ |
+| Distance to a subspace | $\|x-\pi_U(x)\|$ |
+| Eigenvalues, 2×2 | $\lambda^2-\text{tr}\,\lambda+\det=0$ |
+| Eigenvalues, 3×3+ | expand $\det(A-\lambda I)=0$; check $\sum\lambda=\text{tr}$, $\prod\lambda=\det$ |
+| Eigenvectors | solve $\ker(A-\lambda I)$ for each $\lambda$ |
+| Diagonalizable? | compare $\text{gm}$ vs $\text{am}$ for each $\lambda$ |
+| $\det$ of 4×4+ | reduce to triangular, multiply the diagonal (track row swaps/scalings) |
+| PD/PSD/ND/NSD? | $\det$/$\text{tr}$ table, or Sylvester, or find one bad $x$ |
+| Prove $M$ invertible, no numbers | show $\ker M=\{\mathbf 0\}$; if $M=A^\top A$, use $v^\top A^\top Av=\|Av\|^2$ |
+| Disprove a "for all" claim | **one counterexample** |
+| Classify a stationary point | $\nabla f=\mathbf 0$ → build $H$ → definiteness (PD min, ND max, mixed saddle) |
+| Is $f$ convex? | $f''\ge0$, or Hessian PSD |
+| Directional derivative | **normalise $v$ first**, then $\nabla f\cdot\hat v$ |
+| Max directional derivative | $\|\nabla f\|$, attained at $u=\nabla f/\|\nabla f\|$ |
+| Gradient of a composition | $\nabla h(g(x))\,J_g(x)$ — check $(1\times m)(m\times n)$ |
+| Taylor polynomial | $\sum_{k=0}^n \frac{f^{(k)}(x_0)}{k!}(x-x_0)^k$ — list derivatives at $x_0$ first |
+
+---
+
+# T4. Traps
+
+| Trap | Correct |
+|---|---|
+| Line not through origin called a subspace | fails $\mathbf 0\in U$ — check first |
+| Forgetting negative $\lambda$ in closure | $x\ge0$ sets fail at $\lambda=-1$ |
+| Spanning ⟹ basis | also needs **independence** |
+| $\dim V=n$ read as "$S$ has $n$ vectors" | it's the **required** headcount, not the supplied one |
+| $\dim(U)$ = number of components | no — number of **basis vectors** |
+| $b^\top b$ vs $bb^\top$ | scalar vs matrix — check shapes |
+| $\|x\|=\|y\| \Rightarrow \langle x,y\rangle=\|x\|\|y\|$ | false — length says nothing about direction |
+| Surjective ⟹ injective | only if $\dim V=\dim W$ |
+| Image basis from the *reduced* matrix | take pivot columns from the **ORIGINAL** |
+| Free columns must be zeroed in RREF | only **pivot** columns get cleared |
+| Column operations when solving | **rows only** (columns are fine for $\det$) |
+| $(AB)^\top=A^\top B^\top$ | order **reverses**: $B^\top A^\top$ |
+| $(X^\top X)^{-1}=X^{-1}(X^\top)^{-1}$ | false — non-square $X$ has no inverse |
+| $\ker$ and $\text{im}$ compared directly | different spaces: $\ker\subseteq V$, $\text{im}\subseteq W$ |
+| $\mathbf 0$ called an eigenvector | eigenvectors are non-zero (though $\mathbf 0\in E_\lambda$) |
+| rank = # non-zero eigenvalues | false in general |
+| $A^\top A$ is PD | only **PSD** unless full column rank |
+| Sarrus on a 4×4 | 3×3 only — use Laplace |
+| $\pi^2=\pi$ read as "twice" | applying twice = applying **once** |
+| Gradient shape mismatch | MML/problem sets use **row** vectors (numerator layout) |
+| Gradient = steepest descent | **ascent**; $-\nabla f$ is descent |
+| $\nabla f=\mathbf 0$ ⟹ extremum | could be a **saddle** |
+| $f''=0$ ⟹ inflection point | need a **sign change** in $f''$ too |
+| Forgetting to normalise $v$ | $D_vf$ uses $v/\|v\|$ |
+| Taylor equals $f$ everywhere | local approximation only |
+| Chain rule factors in wrong order | $\nabla h\,J_g$ — shapes must chain |
+| $x^\top Ax$ derivative as $2x^\top A$ | only if $A$ is **symmetric**; generally $x^\top(A+A^\top)$ |
+
+---
+
+*Built from `src/exam-sheet.md` — regenerate with `python3 cheatsheet/build.py`*
+</script>
+<script src="../vendor/marked.min.js"></script>
+<script src="../vendor/katex.min.js"></script>
+<script src="../vendor/auto-render.min.js"></script>
+<script>
+  var raw = document.getElementById('source').textContent;
+
+  // Shield math from the markdown parser: underscores and asterisks inside
+  // formulas would be eaten as emphasis, and \| inside a table cell would be
+  // read as a column delimiter.
+  var stash = [];
+  function shield(match) {
+    stash.push(match);
+    return 'ZMATHZ' + (stash.length - 1) + 'ZENDZ';
+  }
+  raw = raw.replace(/\$\$[\s\S]+?\$\$/g, shield);
+  raw = raw.replace(/\$[^$\n]+?\$/g, shield);
+
+  var html = marked.parse(raw);
+
+  // Escape on restore: this string goes through innerHTML, so a "<" or ">"
+  // inside a formula would otherwise be parsed as an HTML tag and eaten.
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  html = html.replace(/ZMATHZ(\d+)ZENDZ/g, function (_, i) { return escapeHtml(stash[+i]); });
+
+  var target = document.getElementById('content');
+  target.innerHTML = html;
+
+  renderMathInElement(target, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false }
+    ],
+    throwOnError: false
+  });
+</script>
+</body>
+</html>

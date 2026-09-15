@@ -1,0 +1,769 @@
+---
+title: Study Reference — Calculus
+profile: study
+---
+
+# Calculus — Study Reference
+
+*BSE Brush-Up 2026 · companion to the exam sheet · Part 1 of the lecture notes*
+
+**Contents**
+1. Derivatives — the definition
+2. Differentiation rules
+3. Stationary points and the second-derivative test
+4. Convexity
+5. Taylor approximation
+6. Partial derivatives and the gradient
+7. Directional derivatives
+8. Gradient identities for vectors and matrices
+9. The Hessian
+10. Jacobian and the multivariate chain rule
+11. Applications — least squares and gradient descent
+
+---
+
+## ⚠️ 0. One convention to settle first
+
+Your lecture notes say the gradient "can be written as a row or column vector". **Both problem sets pin it down: use a ROW vector.**
+
+- PS3(a): "Compute the gradient as a *row* vector"
+- PS5: "Treat the gradient as a *row* vector"; "with $\nabla f$ a row, $D_uf=\nabla f\,u$"
+- PS7(b): "Compute the gradient $\nabla_\beta\text{SSR}(\beta)$ as a *row* vector"
+
+$$\nabla_x f=\begin{bmatrix}\dfrac{\partial f}{\partial x_1}&\cdots&\dfrac{\partial f}{\partial x_n}\end{bmatrix}\in\mathbb{R}^{1\times n}$$
+
+This is **numerator layout**. Most deep-learning material uses the opposite (denominator layout, gradients as columns), so don't be surprised when a blog post disagrees with your notes. Convert by transposing.
+
+Practically: if a shape doesn't line up, **suspect the convention before suspecting the maths**.
+
+---
+
+## 1. Derivatives — the definition
+
+Start with a **univariate function** $y=f(x)$ with $x,y\in\mathbb{R}$.
+
+The **difference quotient** measures average rate of change over a finite step:
+
+$$\frac{\delta y}{\delta x}=\frac{f(x+\delta x)-f(x)}{\delta x}$$
+
+Geometrically that's the slope of the **secant** line through $(x,f(x))$ and $(x+\delta x, f(x+\delta x))$.
+
+Shrink the step to zero and the secant becomes the **tangent**:
+
+$$\frac{\mathrm{d}f}{\mathrm{d}x}=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}$$
+
+**The derivative gives the slope of the tangent line at $x$** — the instantaneous rate of change.
+
+> **Differentiability implies continuity.** If the limit exists, the function can't jump at that point. The converse fails: $f(x)=\lvert x\rvert$ is continuous at $0$ but has no derivative there (the left and right limits disagree). That asymmetry is a standard T/F item.
+
+---
+
+## 2. Differentiation rules
+
+| Rule | |
+|---|---|
+| **Power** | $f(x)=x^r \Rightarrow f'(x)=rx^{r-1}$ |
+| **Sum** | $(f(x)+g(x))'=f'(x)+g'(x)$ |
+| **Product** | $(f(x)g(x))'=f'(x)g(x)+f(x)g'(x)$ |
+| **Quotient** | $\left(\dfrac{f(x)}{g(x)}\right)'=\dfrac{f'(x)g(x)-f(x)g'(x)}{(g(x))^2}$ |
+| **Chain** | $[g(f(x))]'=(g\circ f)'(x)=g'(f(x))\cdot f'(x)$ |
+
+The **chain rule** is the one that matters most — it's the entire basis of backpropagation, and it generalises to the matrix case in §10.
+
+Read it as: *differentiate the outer function, evaluated at the inner one, then multiply by the derivative of the inner one.*
+
+**Worked example from your notes.** $y=h(x)=\ln(x^2-2)$.
+
+Decompose: inner $f(x)=x^2-2$ with $f'(x)=2x$; outer $g(u)=\ln u$ with $g'(u)=1/u$.
+
+$$h'(x)=g'(f(x))\cdot f'(x)=\frac{1}{x^2-2}\cdot2x$$
+
+The habit worth building: **name the inner and outer functions explicitly** before differentiating. Most chain-rule errors come from doing it in your head.
+
+---
+
+## 3. Stationary points
+
+A **stationary point** is a point in the domain of a differentiable $f$ where
+
+$$f'(x)=0$$
+
+The tangent is horizontal. But horizontal doesn't tell you *which kind* of point it is — there are three possibilities.
+
+| | What $f'$ does | Second-derivative test |
+|---|---|---|
+| **Local maximum** | positive → negative | $f''(x)<0$ — *concave* |
+| **Local minimum** | negative → positive | $f''(x)>0$ — *convex* |
+| **Inflection point** | pos → pos, or neg → neg | $f''(x)=0$ **and $f''$ changes sign** |
+
+```
+      local max
+         ╱‾╲              At the max, slope goes + → −.
+        ╱   ╲             At the min, slope goes − → +.
+   ────╱     ╲___╱────    At an inflection, the slope keeps
+                ╲╱       its sign but the curvature flips.
+              local min
+```
+
+### The trap: $f''(x)=0$ is inconclusive
+
+Your notes flag this explicitly, and it's worth dwelling on.
+
+$$f(x)=x^4 \quad\text{at}\quad x=0: \qquad f'(x)=4x^3=0, \qquad f''(x)=12x^2=0$$
+
+Both vanish — yet $x=0$ is a **strict local minimum**, not an inflection point. The graph is a flat-bottomed bowl.
+
+$$\text{(In general } f''(x)=0 \text{ is inconclusive and not necessarily an inflection point.)}$$
+
+For an inflection point you need $f''=0$ **and** a **sign change** in $f''$ around $x$. Without the sign change, the second-derivative test simply gives no information and you must look at higher derivatives or at the behaviour of $f'$ directly.
+
+The multivariate analogue is exactly the PSD/NSD case for the Hessian in §9 — also inconclusive, for the same reason.
+
+---
+
+## 4. Convexity
+
+### Definition
+
+Let $f:X\subseteq\mathbb{R}^n\to\mathbb{R}$. We say $f$ is **convex** if for all $0\le\lambda\le1$ and all $x_1,x_2\in X$:
+
+$$f(\lambda x_1+(1-\lambda)x_2)\le\lambda f(x_1)+(1-\lambda)f(x_2)$$
+
+and **concave** if the inequality reverses:
+
+$$f(\lambda x_1+(1-\lambda)x_2)\ge\lambda f(x_1)+(1-\lambda)f(x_2)$$
+
+### Reading the inequality
+
+$\lambda x_1+(1-\lambda)x_2$ sweeps out the **straight line between $x_1$ and $x_2$** as $\lambda$ runs from 1 to 0. The left side is *the function evaluated on that line*; the right side is *the straight line between the two function values* — the **chord**.
+
+So:
+
+- **Convex** ⟹ the function lies **below** the chord — a bowl
+- **Concave** ⟹ the function lies **above** the chord — a dome
+
+```
+   CONVEX                        CONCAVE
+   λf(x₁) + (1-λ)f(x₂)                ╭──────╮
+    ●────────────────●              ╱          ╲
+     ╲______________╱              ●            ●
+       f(λx₁+(1-λ)x₂)             chord below the curve
+    chord above the curve
+```
+
+### Tests
+
+| | |
+|---|---|
+| $f''(x)\ge0$ on an interval | $\Rightarrow$ $f$ is **convex** there |
+| $f$ differentiable and convex | $\Rightarrow$ $f'$ is **nondecreasing** |
+| Hessian PSD (multivariate) | $\Rightarrow$ convex |
+| Hessian **PD** | $\Rightarrow$ **strictly** convex |
+
+The second row is worth seeing as equivalent to the first: "$f'$ nondecreasing" and "$f''\ge0$" say the same thing, since $f''$ is the rate of change of $f'$.
+
+### Why it matters enormously
+
+For a **convex** function:
+
+- Every local minimum is a **global** minimum
+- The set of minimisers is convex
+- If **strictly** convex, the minimum is **unique**
+
+That's why convexity is the dividing line in optimisation. Convex problems are solved; non-convex ones are merely attempted. Least squares (§11) is convex, which is why it has a closed-form answer.
+
+### Worked example — is $h(x)=\log(1+e^{ax})$ convex?
+
+This is softplus, and it appears again in §5 as a Taylor example.
+
+$$h'(x)=\frac{a\,e^{ax}}{1+e^{ax}}=a\,\sigma(ax)$$
+
+where $\sigma$ is the **sigmoid**. Differentiating again, using $\sigma'=\sigma(1-\sigma)$ and the chain rule:
+
+$$h''(x)=a^2\,\sigma(ax)\big(1-\sigma(ax)\big)$$
+
+Since $\sigma(z)\in(0,1)$ for all $z$, both factors are positive, so $h''(x)\ge0$ everywhere.
+
+**$h$ is convex** — strictly so if $a\neq0$.
+
+---
+
+## 5. Taylor approximation
+
+### The general idea
+
+Polynomials are easy to work with: differentiate, integrate, evaluate — all trivial. So: **create a polynomial similar to $f(x)$ around some point $x_0$.**
+
+### Deriving the first-order approximation
+
+Start from the definition of the derivative and rearrange:
+
+$$f'(x_0)\approx\frac{f(x_0+h)-f(x_0)}{h} \qquad\Big\vert\ \cdot\,h$$
+$$h\cdot f'(x_0)\approx f(x_0+h)-f(x_0) \qquad\Big\vert\ +f(x_0)$$
+$$f(x_0+h)\approx f(x_0)+h\cdot f'(x_0) \qquad\Big\vert\ x_0+h=x$$
+
+$$\boxed{f(x)\approx f(x_0)+f'(x_0)(x-x_0)=T_1(x)}$$
+
+That's just the **tangent line at $x_0$**. It's the best straight-line approximation because it matches both the value and the slope: $T_1(x_0)=f(x_0)$ and $T_1'(x_0)=f'(x_0)$.
+
+### Extending to higher degrees
+
+The design principle from your notes:
+
+- Add information from the original function's **higher-order derivatives at $x_0$**
+- Weight the $k$-th derivative by $(x-x_0)^k$
+- Ensure $T_n^{(k)}(x_0)=f^{(k)}(x_0)$ for all $k=1,\dots,n$
+
+Expanding:
+
+$$T_n(x)=f(x_0)+f'(x_0)(x-x_0)+\tfrac{1}{2}f''(x_0)(x-x_0)^2+\tfrac{1}{2\cdot3}f'''(x_0)(x-x_0)^3+\cdots$$
+
+The divisors $1,\ 1,\ 2,\ 2\cdot3,\dots$ are **factorials** — they're exactly what's needed to cancel the powers that appear when you differentiate $(x-x_0)^k$ repeatedly, so that the $k$-th derivative comes out right.
+
+Recall $x!=1\cdot2\cdot3\cdots x$, with the convention $0!=1!=1$.
+
+### Definition
+
+The **Taylor polynomial of degree $n$** of $f:\mathbb{R}\to\mathbb{R}$ at $x_0$ is
+
+$$\boxed{T_n(x)=\sum_{k=0}^{n}\frac{f^{(k)}(x_0)}{k!}\,(x-x_0)^k}$$
+
+> ⚠️ **A Taylor polynomial approximates $f$ *locally*.** It does **not** equal $f$ everywhere, no matter how smooth $f$ is. The only exception: if $f$ is itself a polynomial of degree $k\le n$, then $T_n=f$ exactly. This is a standard T/F trap.
+
+### Worked example 1 — $f(x)=\ln(1+x)$ at $x_0=0$
+
+Derivatives at 0: $\ f(0)=0$, $f'(0)=1$, $f''(0)=-1$, $f^{(3)}(0)=2$.
+
+$$T_3(x)=0+1\cdot x+\frac{-1}{2!}x^2+\frac{2}{3!}x^3=x-\frac{x^2}{2}+\frac{x^3}{3}$$
+
+For the general term, $f^{(k)}(x)=(-1)^{k-1}(k-1)!/(1+x)^k$, so $f^{(k)}(0)=(-1)^{k-1}(k-1)!$ and
+
+$$T_n(x)=\sum_{k=1}^n\frac{(-1)^{k-1}(k-1)!}{k!}x^k=\sum_{k=1}^n(-1)^{k-1}\frac{x^k}{k}$$
+
+The $(k-1)!/k!=1/k$ cancellation is what produces the tidy alternating harmonic pattern.
+
+### Worked example 2 — softplus, from your notes
+
+Find $T_3$ for $f(t)=\log(1+\exp(a+bt))$ at $t_0=0$.
+
+> $\log(1+e^x)$ is called **softplus**. Why? For large negative $x$ it tends to $0$; for large positive $x$ it tends to $x$. It's a smooth approximation to $\max(0,x)$ — ReLU with the corner rounded off.
+
+Set $z(t)=a+bt$, so $z'(t)=b$.
+
+**The sigmoid, and its derivative.**
+
+$$\sigma(z(t))=\frac{e^{z(t)}}{1+e^{z(t)}}=\frac{1}{1+e^{-z(t)}}, \qquad \lim_{z\to\infty}\sigma(z)=1, \quad \lim_{z\to-\infty}\sigma(z)=0$$
+
+The identity that makes everything collapse:
+
+$$1-\sigma(z)=1-\frac{1}{1+e^{-z}}=\frac{(1+e^{-z})-1}{1+e^{-z}}=\frac{e^{-z}}{1+e^{-z}}$$
+
+$$\Longrightarrow\qquad \boxed{\sigma'(z)=\sigma(z)\big(1-\sigma(z)\big)}$$
+
+This is one of the most useful identities in ML — the sigmoid's derivative is expressible in terms of the sigmoid itself, so a forward pass gives you the backward pass for free.
+
+**Step 1 — the first $n$ derivatives.** Writing $\sigma$ for $\sigma(z(t))$:
+
+$$f'(t)=\frac{1}{1+e^{z(t)}}\cdot e^{z(t)}\cdot b=b\,\sigma$$
+$$f''(t)=b^2\,\sigma(1-\sigma)=b^2\sigma-b^2\sigma^2$$
+$$f'''(t)=b^3\sigma(1-\sigma)-b^2\cdot2\sigma\cdot b\,\sigma(1-\sigma)=\big[b^3\sigma(1-\sigma)\big](1-2\sigma)$$
+
+**Step 2 — evaluate at $t_0=0$.** There $z(0)=a$; write $S=\sigma(a)$ for brevity.
+
+$$f(0)=\log(1+e^a), \quad f'(0)=bS, \quad f''(0)=b^2S(1-S), \quad f'''(0)=b^3S(1-S)(1-2S)$$
+
+**Step 3 — assemble.**
+
+$$T_3(t)=\log(1+e^a)+bS\,(t-0)+\frac{1}{2!}b^2S(1-S)(t-0)^2+\frac{1}{3!}\big[b^3S(1-S)\big](1-2S)(t-0)^3$$
+
+> The lesson isn't the formula — it's the **method**: find a recurrence for the derivatives (here via $\sigma'=\sigma(1-\sigma)$), evaluate at the expansion point, substitute into the definition. Trying to differentiate softplus three times by brute force is painful; using the sigmoid identity makes it mechanical.
+
+### Multivariate Taylor, to second order
+
+$$f(x)\approx f(x_0)+\nabla f(x_0)(x-x_0)+\tfrac12(x-x_0)^\top H(x_0)(x-x_0)$$
+
+The first-order term is the tangent plane; the second-order term supplies curvature. At a stationary point ($\nabla f=\mathbf 0$) the linear term vanishes, and the **definiteness of $H$** alone decides whether you're at a minimum, maximum or saddle — which is §9.
+
+---
+
+## 6. Partial derivatives and the gradient
+
+### Partial derivatives
+
+For $f:\mathbb{R}^n\to\mathbb{R}$, $x\mapsto f(x)$ with variables $x_1,\dots,x_n$:
+
+$$\frac{\partial f}{\partial x_1}=\lim_{h\to0}\frac{f(x_1+h,\,x_2,\dots,x_n)-f(x)}{h}, \qquad\cdots\qquad \frac{\partial f}{\partial x_n}=\lim_{h\to0}\frac{f(x_1,\dots,x_n+h)-f(x)}{h}$$
+
+> $\dfrac{\partial f}{\partial x_i}(x)$ describes the **local slope at $x$ when moving parallel to $x_i$**. You vary one variable and treat the others as constant.
+
+It's the ordinary derivative, restricted to one axis at a time.
+
+### Gradient
+
+The vector containing all $n$ partial derivatives:
+
+$$\nabla_x f=\text{grad}f=\frac{\mathrm{d}f}{\mathrm{d}x}=\begin{bmatrix}\dfrac{\partial f}{\partial x_1}&\cdots&\dfrac{\partial f}{\partial x_n}\end{bmatrix}$$
+
+Two facts to hold onto:
+
+**1. At a stationary point, the entire gradient vector equals the zero vector.** Not just one component — all of them. A single non-zero partial means there's still a direction that increases $f$.
+
+**2. The gradient points in the direction of steepest ASCENT.**
+
+> ⚠️ **Ascent, not descent.** Gradient *descent* steps along $-\nabla f$ precisely because $+\nabla f$ goes uphill. This exact statement appears as a False item in the problem set.
+
+**Example.** $f(x_1,x_2)=x_1^2+x_2^2$:
+
+$$\nabla_xf(x_1,x_2)=[\,2x_1,\ 2x_2\,]$$
+
+At the point $(0,0)$: $\ \nabla f(0,0)=[0,0]$ — stationary, and for this bowl it's the global minimum.
+
+### The trap
+
+> $\nabla f(x_0)=\mathbf 0$ does **not** imply that $x_0$ is a local extremum.
+
+Counterexample: $f(x,y)=x^2-y^2$ at the origin. $\nabla f=[2x,-2y]=[0,0]$ there, but the surface curves **up** along $x$ and **down** along $y$ — a **saddle point**. It's a minimum in one direction and a maximum in another.
+
+This is the multivariate version of the $f''=0$ problem from §3, and it's why you need the Hessian.
+
+---
+
+## 7. Directional derivatives
+
+Partial derivatives tell you the slope along the coordinate axes. What about an arbitrary direction?
+
+If $f$ is differentiable at $x$, the **directional derivative along any vector $v$** is
+
+$$\boxed{D_vf(x)=\left\langle\nabla f(x),\ \frac{v}{\|v\|}\right\rangle}$$
+
+> ⚠️ **Normalise $v$.** The $v/\|v\|$ is essential — otherwise you'd be measuring the length of $v$ as well as the slope, and doubling $v$ would double the "rate of change", which is meaningless.
+
+For a unit vector $u$ the normalisation is already done, so with a row gradient this is just a matrix product:
+
+$$D_uf(x)=\nabla f(x)\,u \qquad (1\times n)(n\times1)$$
+
+### Worked example from your notes
+
+$f(x_1,x_2)=x_1^2+x_2^2$, so $\nabla f=[2x_1,\ 2x_2]$. Evaluate at the point $(1,1)$.
+
+**Direction 1:** $v=\begin{bmatrix}3\\1\end{bmatrix}$, $\ \|v\|=\sqrt{3^2+1^2}=\sqrt{10}$
+
+$$\left\langle\nabla f(x),\frac{v}{\|v\|}\right\rangle=\frac{1}{\sqrt{10}}\big((2x_1\cdot3)+(2x_2\cdot1)\big)=\frac{1}{\sqrt{10}}(6x_1+2x_2)$$
+
+At $(1,1)$: $\ D_vf(1,1)=\dfrac{8}{\sqrt{10}}\approx2.5$
+
+**Direction 2:** $v=\nabla f$ itself.
+
+$$\left\langle\nabla f,\ \frac{\nabla f}{\|\nabla f\|}\right\rangle=\frac{\|\nabla f\|^2}{\|\nabla f\|}=\|\nabla f\|$$
+
+At $(1,1)$, $\nabla f=[2,2]$, so $\ D_{\nabla f}f(1,1)=\sqrt{2^2+2^2}=\sqrt8\approx2.8$
+
+**$2.8>2.5$** — and that's not a coincidence.
+
+### Why the gradient direction is steepest — the proof
+
+This is the problem-set proof, and it's a nice payoff for Cauchy–Schwarz.
+
+**Claim.** For every unit vector $u$, $\ D_uf(x_0)\le\|\nabla f(x_0)\|$, with equality iff $u=\nabla f(x_0)/\|\nabla f(x_0)\|$ (assuming $\nabla f(x_0)\neq\mathbf 0$).
+
+Let $g=\nabla f(x_0)$. For any unit $u$, **Cauchy–Schwarz** gives
+
+$$\lvert g\cdot u\rvert\le\|g\|\,\|u\|=\|g\|$$
+
+Hence
+
+$$D_uf(x_0)=g\cdot u\le\lvert g\cdot u\rvert\le\|g\|$$
+
+For **equality**, both inequalities must be tight:
+
+1. $\lvert g\cdot u\rvert=\|g\|$ — equality in Cauchy–Schwarz, which holds iff $u=\pm g/\|g\|$. (Check: $\left\lvert g\cdot\frac{\pm g}{\|g\|}\right\rvert=\frac{\|g\|^2}{\|g\|}=\|g\|$ ✓)
+2. $g\cdot u=\lvert g\cdot u\rvert$, i.e. $g\cdot u\ge0$ — which forces the **plus** sign.
+
+Therefore
+
+$$D_uf(x_0)=\|\nabla f(x_0)\| \iff u=\frac{\nabla f(x_0)}{\|\nabla f(x_0)\|}$$
+
+Symmetrically, the **minimum** $D_uf(x_0)=-\|\nabla f(x_0)\|$ is attained at $u=-\nabla f(x_0)/\|\nabla f(x_0)\|$ — the direction of steepest **descent**, and hence the direction gradient descent steps in.
+
+**And if $\nabla f(x_0)=\mathbf 0$?** Then $D_uf(x_0)=0$ for every unit $u$: the function is **flat to first order in all directions**. You learn nothing from the gradient and must go to second order.
+
+> Note that the two-part structure of the equality argument is the interesting bit. Cauchy–Schwarz alone only gives you $\pm$; it's the second condition that picks ascent over descent. Skipping it is a common way to lose marks.
+
+---
+
+## 8. Gradient identities
+
+These are the vector-calculus analogues of the power rule — worth knowing cold.
+
+### Linear form: $f(x)=x^\top b$
+
+With $x,b\in\mathbb{R}^n$ and $f(x)=x^\top b=b^\top x=\sum_{i=1}^N x_ib_i$:
+
+$$\nabla_x f=\left[\frac{\partial\,x^\top b}{\partial x_1},\ \frac{\partial\,x^\top b}{\partial x_2},\ \cdots\right]=[\,b_1\ b_2\ \cdots\ b_n\,]=b^\top$$
+
+and symmetrically, differentiating with respect to $b$ instead:
+
+$$\nabla_b f=[\,x_1\ x_2\ \cdots\ x_n\,]=x^\top$$
+
+*The matrix analogue of $\frac{\mathrm{d}}{\mathrm{d}x}(bx)=b$.* Just transpose to switch layouts.
+
+### Quadratic form: $f(x)=x^\top Ax$
+
+With $A\in\mathbb{R}^{n\times n}$ and $f(x)=x^\top Ax=\sum_{i=1}^n\sum_{j=1}^n a_{ij}x_ix_j$, differentiate with respect to one component:
+
+$$\frac{\partial\,x^\top Ax}{\partial x_1}=2a_{11}x_1+\sum_{j=2}^n a_{1j}x_j+\sum_{i=2}^n a_{i1}x_i=\sum_{j=1}^n a_{1j}x_j+\sum_{i=1}^n a_{i1}x_i$$
+
+The $x_1$ term appears **twice** — once from row 1 and once from column 1 — which is where the factor of 2 comes from. Folding the isolated $2a_{11}x_1$ back into both sums makes the structure visible.
+
+Those two sums are inner products of $x$ with the first **row** and first **column** of $A$. Doing this for every component and stacking:
+
+$$\nabla f=\big[x^\top(b_1+a_1),\ x^\top(b_2+a_2),\ \dots,\ x^\top(b_n+a_n)\big]=x^\top\big[(b_1+a_1)\ \cdots\ (b_n+a_n)\big]$$
+
+where $a_i$ and $b_i$ denote the $i$-th columns of $A$ and $A^\top$. Hence
+
+$$\boxed{\nabla_x(x^\top Ax)=x^\top(A^\top+A)=x^\top(A+A^\top)}$$
+
+In **denominator** layout this reads $(A+A^\top)x$.
+
+**Special case — $A$ symmetric.** Then $A+A^\top=2A$ and
+
+$$\nabla_x(x^\top Ax)=2x^\top A$$
+
+> ⚠️ **Only when $A$ is symmetric.** Writing $2x^\top A$ for a general $A$ is a common error. Since Hessians and covariance matrices are symmetric, you'll usually be in the nice case — but check.
+
+### Summary table
+
+| $f(x)$ | $\nabla_x f$ (row) |
+|---|---|
+| $x^\top b=b^\top x$ | $b^\top$ |
+| $x^\top b$, with respect to $b$ | $x^\top$ |
+| $Ax$ | $A$ |
+| $x^\top Ax$ | $x^\top(A+A^\top)$ |
+| $x^\top Ax$, $A$ symmetric | $2x^\top A$ |
+| $\|x\|_2^2=x^\top x$ | $2x^\top$ |
+| $(y-Xb)^\top(y-Xb)$, wrt $b$ | $-2y^\top X+2b^\top X^\top X$ |
+
+That last row is the least-squares loss, and §11 shows where it leads.
+
+---
+
+## 9. The Hessian
+
+### Definition
+
+For $x\in\mathbb{R}^n$ and $f:\mathbb{R}^n\to\mathbb{R}$, the **Hessian** is the $n\times n$ matrix of all second partial derivatives:
+
+$$H=\begin{bmatrix}
+\dfrac{\partial^2f}{\partial x_1^2} & \dfrac{\partial^2f}{\partial x_1\partial x_2} & \cdots & \dfrac{\partial^2f}{\partial x_1\partial x_n}\\[8pt]
+\dfrac{\partial^2f}{\partial x_2\partial x_1} & \ddots & & \vdots\\[8pt]
+\vdots & & & \\[8pt]
+\dfrac{\partial^2f}{\partial x_n\partial x_1} & \cdots & & \dfrac{\partial^2f}{\partial x_n^2}
+\end{bmatrix}$$
+
+**Example from your notes.** $f(x_1,x_2)=x_1^2+x_2^2$:
+
+$$\frac{\partial f}{\partial x_1}=2x_1 \Rightarrow \frac{\partial^2f}{\partial x_1^2}=2, \quad \frac{\partial^2f}{\partial x_1\partial x_2}=0, \qquad\text{so}\qquad H=\begin{bmatrix}2&0\\0&2\end{bmatrix}$$
+
+Constant here because $f$ is quadratic — the curvature is the same everywhere.
+
+### It's symmetric — and that's the whole reason it's useful
+
+By **Schwarz's theorem**, when the second partial derivatives are continuous the order of differentiation doesn't matter:
+
+$$\frac{\partial^2f}{\partial x_i\partial x_j}=\frac{\partial^2f}{\partial x_j\partial x_i} \qquad\Longrightarrow\qquad H=H^\top$$
+
+That single fact unlocks everything from Part A:
+
+- Real eigenvalues
+- Orthogonal eigenvectors
+- Always diagonalizable (never defective)
+- The PD/PSD/ND/NSD machinery applies directly
+
+### ⭐ Definiteness of the Hessian is important
+
+At a **stationary point** (where $\nabla f=\mathbf 0$):
+
+| $H$ | Verdict |
+|---|---|
+| **PD** | strict local **minimum** |
+| **ND** | strict local **maximum** |
+| **Mixed-sign** eigenvalues | **saddle point** |
+| **PSD / NSD** | **inconclusive** |
+
+The intuition: the second-order Taylor term is $\tfrac12(x-x_0)^\top H(x-x_0)$, a quadratic form. If it's positive in every direction, you're at the bottom of a bowl. If negative in every direction, the top of a dome. If positive in some directions and negative in others — a saddle.
+
+> **PSD/NSD is inconclusive for the same reason $f''=0$ is inconclusive in one dimension.** A zero eigenvalue means there's a direction with no second-order curvature at all, and you'd need higher derivatives to decide. Recall $x^4$: $f''(0)=0$, yet it's a strict minimum.
+
+**Globally**, the statement is stronger:
+
+- $H$ PSD **everywhere** ⟹ $f$ is convex ⟹ every stationary point is a **global** minimum
+- $H$ PD **everywhere** ⟹ $f$ is **strictly** convex ⟹ the minimum is **unique**
+
+### Worked example
+
+$$f(x_1,x_2)=x_1^2+2x_1x_2+3x_2^2-4x_1+6$$
+
+**Gradient (row vector):**
+
+$$\nabla f(x)=[\,2x_1+2x_2-4,\ \ 2x_1+6x_2\,]$$
+
+**Stationary points** — set $\nabla f=\mathbf 0$:
+
+$$\begin{cases}2x_1+2x_2-4=0\\2x_1+6x_2=0\end{cases}$$
+
+The second gives $x_1=-3x_2$. Substituting into the first: $-6x_2+2x_2-4=0 \Rightarrow x_2=-1$, hence $x_1=3$.
+
+**Unique stationary point $(3,-1)$.**
+
+**Classify it.** The Hessian:
+
+$$H=\begin{bmatrix}2&2\\2&6\end{bmatrix}$$
+
+$H$ is symmetric, so it's PD iff all eigenvalues are positive:
+
+$$\chi_H(\lambda)=\det\begin{bmatrix}2-\lambda&2\\2&6-\lambda\end{bmatrix}=(2-\lambda)(6-\lambda)-4=\lambda^2-8\lambda+8$$
+
+$$\lambda_{1,2}=\frac{8\pm\sqrt{64-32}}{2}=4\pm2\sqrt2$$
+
+Both positive, so $H\succ0$ and $(3,-1)$ is a **strict local minimum**.
+
+> **Faster route:** $\text{tr}(H)=8>0$ and $\det(H)=12-4=8>0$, so both eigenvalues are positive. Or Sylvester's criterion: leading minors $2>0$ and $8>0$. Either takes seconds, versus a minute for the quadratic formula. Under exam time pressure, use these.
+
+**Directional derivative at the stationary point.** Since $\nabla f(3,-1)=[0,0]$, we get $D_uf(3,-1)=\nabla f(3,-1)\,u=0$ for **every** direction $u$ — as §7 predicted.
+
+---
+
+## 10. Jacobian and the multivariate chain rule
+
+### Definition
+
+> The collection of all first-order partial derivatives of a **vector-valued** function $f:\mathbb{R}^n\to\mathbb{R}^m$ is called the **Jacobian**.
+
+$$J_{f(x)}=\begin{bmatrix}\dfrac{\partial f_1(x)}{\partial x_1}&\cdots&\dfrac{\partial f_1(x)}{\partial x_n}\\[8pt]\vdots& &\vdots\\[8pt]\dfrac{\partial f_m(x)}{\partial x_1}&\cdots&\dfrac{\partial f_m(x)}{\partial x_n}\end{bmatrix}\in\mathbb{R}^{m\times n}, \qquad J_{(i,j)}=\frac{\partial f_i(x)}{\partial x_j}$$
+
+**Each row is the gradient of one output component.** Row 1 is $\nabla f_1$, row $m$ is $\nabla f_m$.
+
+> Your notes state this explicitly: *"this is again in the numerator layout with gradients as **row vectors** (MML book)"*, with $J_{\text{numerator}}=J_{\text{denominator}}^\top$. That's the confirmation that row vectors are the course convention — see §0.
+
+The gradient is just the Jacobian of a scalar-valued function ($m=1$). Same object, different name.
+
+### Shapes
+
+Getting these right makes the chain rule mechanical. Getting them wrong makes it impossible.
+
+| Object | For | Shape | Entries |
+|---|---|---|---|
+| **Gradient** $\nabla f$ | $f:\mathbb{R}^n\to\mathbb{R}$ | $1\times n$ | $\partial f/\partial x_j$ |
+| **Jacobian** $J_g$ | $g:\mathbb{R}^n\to\mathbb{R}^m$ | $m\times n$ | $\partial g_i/\partial x_j$ |
+| **Hessian** $H$ | $f:\mathbb{R}^n\to\mathbb{R}$ | $n\times n$ | $\partial^2f/\partial x_i\partial x_j$ |
+
+### The Jacobian of a linear map is the matrix itself
+
+This is the cleanest possible example, and worth doing once carefully.
+
+Let $A\in\mathbb{R}^{3\times4}$ and $x\in\mathbb{R}^4$, with $f(x)=Ax$ — so $f:\mathbb{R}^4\to\mathbb{R}^3$.
+
+Recall $A$ can be read two ways: by **columns** $A=[c_1\ c_2\ c_3\ c_4]$, or by **rows** $A=[r_1^\top;\ r_2^\top;\ r_3^\top]$.
+
+The column reading gives the linear combination:
+
+$$Ax=x_1c_1+x_2c_2+x_3c_3+x_4c_4$$
+
+The row reading gives the components, which is what we need for differentiating:
+
+$$Ax=\begin{bmatrix}r_1^\top x\\r_2^\top x\\r_3^\top x\end{bmatrix}=\begin{bmatrix}\sum_{i=1}^4 a_{1i}x_i\\[4pt]\sum_{i=1}^4 a_{2i}x_i\\[4pt]\sum_{i=1}^4 a_{3i}x_i\end{bmatrix}$$
+
+Now $f_k(x)=\sum_i a_{ki}x_i$, so $\partial f_k/\partial x_j=a_{kj}$ — every other term is constant with respect to $x_j$. Stacking the gradients as rows:
+
+$$J_{f(x)}=\begin{bmatrix}\nabla_xf_1(x)\\\nabla_xf_2(x)\\\nabla_xf_3(x)\end{bmatrix}=\begin{bmatrix}a_{11}&a_{12}&a_{13}&a_{14}\\a_{21}&a_{22}&a_{23}&a_{24}\\a_{31}&a_{32}&a_{33}&a_{34}\end{bmatrix}=A$$
+
+$$\boxed{\nabla_x(Ax)=A}$$
+
+The matrix analogue of $\frac{\mathrm d}{\mathrm dx}(ax)=a$. A linear map is its own derivative — which is exactly what "linear" should mean.
+
+### The chain rule, generalised
+
+Single variable: $\ [g(f(x))]'=g'(f(x))\,f'(x)$
+
+**Matrix form.** For $f=h\circ g$:
+
+$$\boxed{\nabla f(x)=\nabla h\big(g(x)\big)\,J_g(x)}$$
+
+Shapes: $(1\times m)(m\times n)=(1\times n)$ ✓
+
+For a longer composition $f=f_k\circ\cdots\circ f_1$, multiply all the Jacobians:
+
+$$J_f=J_{f_k}\cdots J_{f_2}J_{f_1}$$
+
+### Chain rule as matrix multiplication — the parametric case
+
+This is the version from the whiteboard, and it makes the "sum over paths" idea concrete.
+
+Consider $f(x_1,x_2)$ where $x_1$ and $x_2$ are themselves functions of a single parameter $t$, i.e. $x_1(t)$ and $x_2(t)$:
+
+$$\nabla_tf=\nabla_xf\cdot J_{x(t)}=\begin{bmatrix}\dfrac{\partial f}{\partial x_1}&\dfrac{\partial f}{\partial x_2}\end{bmatrix}\begin{bmatrix}\dfrac{\partial x_1(t)}{\partial t}\\[10pt]\dfrac{\partial x_2(t)}{\partial t}\end{bmatrix}=\frac{\partial f}{\partial x_1}\frac{\partial x_1}{\partial t}+\frac{\partial f}{\partial x_2}\frac{\partial x_2}{\partial t}$$
+
+**Notice what happened.** The matrix product on the left *is* the familiar sum-of-products rule on the right. A $(1\times2)$ row times a $(2\times1)$ column produces exactly one term per intermediate variable. The matrix formulation isn't a different rule — it's bookkeeping that scales to any number of intermediates.
+
+**Worked example.** $f(x_1,x_2)=x_1^2+2x_2$ with $x_1(t)=\sin t$ and $x_2(t)=\cos t$, so that $f(t)=\sin^2t+2\cos t$.
+
+$$\nabla_xf=[\,2x_1\ \ 2\,], \qquad J_{x(t)}=\begin{bmatrix}\cos t\\-\sin t\end{bmatrix}$$
+
+$$\nabla_tf=[\,2x_1\ \ 2\,]\begin{bmatrix}\cos t\\-\sin t\end{bmatrix}=2x_1\cos t-2\sin t=2\sin t\cos t-2\sin t$$
+
+Substituting $x_1=\sin t$ at the last step. You can verify by differentiating $\sin^2t+2\cos t$ directly.
+
+### Worked example — composition of two vector functions
+
+$$g(x_1,x_2)=\begin{bmatrix}x_1^2+x_2\\\sin(x_1x_2)\end{bmatrix}:\mathbb{R}^2\to\mathbb{R}^2, \qquad h(y_1,y_2)=y_1^3+2y_2:\mathbb{R}^2\to\mathbb{R}$$
+
+**Step 1 — the pieces.**
+
+$$J_g(x)=\begin{bmatrix}\dfrac{\partial}{\partial x_1}(x_1^2+x_2)&\dfrac{\partial}{\partial x_2}(x_1^2+x_2)\\[8pt]\dfrac{\partial}{\partial x_1}\sin(x_1x_2)&\dfrac{\partial}{\partial x_2}\sin(x_1x_2)\end{bmatrix}=\begin{bmatrix}2x_1&1\\x_2\cos(x_1x_2)&x_1\cos(x_1x_2)\end{bmatrix}$$
+
+$$\nabla h(y)=\left[\frac{\partial h}{\partial y_1},\ \frac{\partial h}{\partial y_2}\right]=[\,3y_1^2,\ 2\,]$$
+
+**Step 2 — chain them.** With $y=g(x)$, i.e. $y_1=x_1^2+x_2$ and $y_2=\sin(x_1x_2)$:
+
+$$\nabla f(x)=[\,3(x_1^2+x_2)^2,\ 2\,]\begin{bmatrix}2x_1&1\\x_2\cos(x_1x_2)&x_1\cos(x_1x_2)\end{bmatrix}$$
+
+$$=\big[\,3(x_1^2+x_2)^2\cdot2x_1+2x_2\cos(x_1x_2),\ \ \ 3(x_1^2+x_2)^2\cdot1+2x_1\cos(x_1x_2)\,\big]$$
+
+**Step 3 — evaluate at $(1,2)$.** Here $x_1^2+x_2=3$ and $\cos(x_1x_2)=\cos2$:
+
+$$\nabla f(1,2)=[\,3\cdot3^2\cdot2\cdot1+2\cdot2\cos2,\ \ 3\cdot3^2+2\cdot1\cdot\cos2\,]=[\,54+4\cos2,\ \ 27+2\cos2\,]$$
+
+**Step 4 — a directional derivative from it.** With $u=\tfrac{1}{\sqrt5}(1,2)^\top$ (already a unit vector):
+
+$$D_uf(1,2)=\nabla f(1,2)\,u=\frac{1}{\sqrt5}\big((54+4\cos2)\cdot1+(27+2\cos2)\cdot2\big)=\frac{1}{\sqrt5}\big(108+8\cos2\big)$$
+
+> **Leave $\cos 2$ symbolic.** There are no marks for decimals, and evaluating it invites arithmetic slips.
+
+---
+
+## 11. Applications
+
+### Least squares, derived by calculus
+
+Part A derived the normal equations **geometrically** (residual orthogonal to the column space). Here's the same result from **calculus**, which is how the problem set frames it.
+
+Let $y\in\mathbb{R}^n$, $X\in\mathbb{R}^{n\times p}$, $\beta\in\mathbb{R}^p$. Define the sum of squared residuals:
+
+$$\text{SSR}(\beta)=\sum_{i=1}^n r_i(\beta)^2=\sum_{i=1}^n(y_i-x_i^\top\beta)^2=(y-X\beta)^\top(y-X\beta)$$
+
+**Expand.** The cross terms need one observation: $y^\top X\beta$ is a $1\times1$ **scalar**, so it equals its own transpose $\beta^\top X^\top y$. The two middle terms are therefore identical:
+
+$$\text{SSR}(\beta)=y^\top y-y^\top X\beta-\beta^\top X^\top y+\beta^\top X^\top X\beta=y^\top y-2y^\top X\beta+\beta^\top X^\top X\beta$$
+
+**Gradient** (row vector), using $\nabla_x(x^\top b)=b^\top$ and $\nabla_x(x^\top Ax)=2x^\top A$ for symmetric $A=X^\top X$:
+
+$$\nabla_\beta\text{SSR}(\beta)=-2y^\top X+2\beta^\top X^\top X$$
+
+Setting it to zero and transposing:
+
+$$-2y^\top X+2\hat\beta^\top X^\top X=0 \qquad\Longrightarrow\qquad \boxed{X^\top X\hat\beta=X^\top y}$$
+
+**The same normal equations as the geometric route.** That agreement is worth noticing: "minimise the squared distance" and "make the residual perpendicular" are genuinely the same condition.
+
+**Hessian.**
+
+$$H=\nabla^2_\beta\text{SSR}(\beta)=2X^\top X$$
+
+For any $z\in\mathbb{R}^p$:
+
+$$z^\top Hz=2z^\top X^\top Xz=2(Xz)^\top(Xz)=2\|Xz\|_2^2\ \ge0$$
+
+— the $v^\top A^\top Av=\|Av\|^2$ move again. So **$H$ is always PSD**, meaning SSR is **always convex** regardless of the data.
+
+**When is it PD?** Exactly when $\|Xz\|_2^2>0$ for all $z\neq\mathbf 0$, i.e. $Xz\neq\mathbf 0$ for all $z\neq\mathbf 0$, i.e.
+
+$$\ker(X)=\{\mathbf 0\} \iff \text{the columns of } X \text{ are linearly independent} \iff \text{rk}(X)=p$$
+
+In that case $X^\top X$ is PD, hence invertible, and
+
+$$\boxed{\hat\beta=(X^\top X)^{-1}X^\top y}$$
+
+**What definiteness buys you.** $H=2X^\top X$ PD everywhere ⟹ SSR is **strictly convex** ⟹ the stationary point $\hat\beta$ is the **unique global minimum**. Not just a local one — strict convexity rules that out.
+
+**If the columns are dependent.** There's some $z\neq\mathbf 0$ with $Xz=\mathbf 0$, so $z^\top X^\top Xz=\|Xz\|_2^2=0$. Then $X^\top X$ is PSD but **not** PD, hence singular, and $(X^\top X)^{-1}$ doesn't exist.
+
+SSR is still convex, so every stationary point is still a global minimum — but the minimiser is **not unique**:
+
+$$X(\hat\beta+z)=X\hat\beta+Xz=X\hat\beta \qquad\Longrightarrow\qquad \text{SSR}(\hat\beta+z)=\text{SSR}(\hat\beta)$$
+
+Every element of $\ker(X)$ can be added to $\hat\beta$ without changing the fit. **Predictions unique, coefficients arbitrary** — multicollinearity, arrived at from a third direction.
+
+### Gradient descent and backpropagation
+
+This is the problem set's logistic-regression exercise, and it's the smallest complete example of how ML training works.
+
+**Setup.** One data point $x\in\mathbb{R}^2$, weights $w\in\mathbb{R}^2$, binary label $y\in\{0,1\}$:
+
+$$z(w)=w^\top x, \qquad p(z)=\frac{1}{1+e^{-z}}, \qquad L(p,y)=-\big[y\log p+(1-y)\log(1-p)\big]$$
+
+$p$ is a **predicted probability**; $L$ is small when the prediction agrees with the observation and large when it disagrees.
+
+**The three local derivatives.**
+
+$$\frac{\partial L}{\partial p}=-\frac{y}{p}+\frac{1-y}{1-p}, \qquad \frac{\partial p}{\partial z}=p(1-p), \qquad \frac{\partial z}{\partial w}=[\,x_1\ \ x_2\,]=x^\top$$
+
+**Chain them.**
+
+$$\frac{\partial L}{\partial w}=\frac{\partial L}{\partial p}\frac{\partial p}{\partial z}\frac{\partial z}{\partial w}=\left(-\frac yp+\frac{1-y}{1-p}\right)p(1-p)\,x^\top$$
+
+Simplify — the $p$ and $1-p$ factors cancel beautifully:
+
+$$=\big[-y(1-p)+(1-y)p\big]x^\top=\big[-y+yp+p-yp\big]x^\top$$
+
+$$\boxed{\frac{\partial L}{\partial w}=(p-y)\,x^\top}$$
+
+**Prediction error times input.** All the sigmoid machinery vanishes. This is why logistic regression is so clean to implement, and the same structure reappears throughout neural networks.
+
+**The update.**
+
+$$w_{\text{new}}=w-\eta\left(\frac{\partial L}{\partial w}\right)^\top$$
+
+Move the parameters **opposite** to the derivative — because the gradient points uphill (§6) and you want to go down. The scalar $\eta>0$ is the **learning rate**, controlling step size; the problem set uses $\eta=1$ and omits it.
+
+> The transpose is there because $\partial L/\partial w$ is a **row** vector under the course convention, while $w$ is a column. Shapes have to match before you can subtract.
+
+**Worked, with numbers.** $x=(1,2)^\top$, $w=(0,0)^\top$, $y=1$.
+
+*Forward pass:*
+$$z=w^\top x=0, \qquad p=\frac{1}{1+e^0}=\tfrac12, \qquad L=-\log\tfrac12=\log2\approx0.693$$
+
+*Backward pass:*
+$$\frac{\partial L}{\partial p}=-\frac{1}{1/2}=-2, \qquad \frac{\partial p}{\partial z}=\tfrac12\left(1-\tfrac12\right)=\tfrac14, \qquad \frac{\partial z}{\partial w}=[1\ \ 2]$$
+
+$$\frac{\partial L}{\partial w}=(p-y)x^\top=\left(\tfrac12-1\right)[1\ \ 2]=\left[-\tfrac12\ \ -1\right]$$
+
+*Update:*
+$$w_{\text{new}}=\begin{bmatrix}0\\0\end{bmatrix}-\begin{bmatrix}-\tfrac12\\-1\end{bmatrix}=\begin{bmatrix}\tfrac12\\1\end{bmatrix}$$
+
+*Check it worked:*
+$$z_{\text{new}}=\tfrac12+2=\tfrac52, \qquad p_{\text{new}}=\frac{1}{1+e^{-5/2}}\approx0.924, \qquad L_{\text{new}}=-\log(p_{\text{new}})\approx0.079$$
+
+$$p: 0.5\to0.924 \quad\text{(closer to } y=1) \qquad\qquad L: 0.693\to0.079 \quad\text{(loss reduced)} \ \checkmark$$
+
+**What just happened.** One step of **gradient descent** on a logistic regression model — which is also the simplest possible neural network: a weighted sum followed by a sigmoid. The derivative with respect to the parameters was obtained **entirely by composing derivatives**:
+
+$$\frac{\partial L}{\partial w}=\frac{\partial L}{\partial p}\frac{\partial p}{\partial z}\frac{\partial z}{\partial w}$$
+
+For deeper models the same idea is applied repeatedly through many intermediate functions. **That repeated application of the chain rule is backpropagation.** For an input $x\in\mathbb{R}^d$ the identical calculation works with $d$ parameters instead of two.
+
+### A note on computation graphs
+
+The structure $w\to z\to p\to L$ is a **computation graph**: each node is an intermediate value, each edge a local derivative. The chain rule says the derivative along a path is the **product** of the edge derivatives, and where paths branch you **sum** over them.
+
+Two directions are possible:
+
+| | Evaluate | Cheap when |
+|---|---|---|
+| **Forward mode** | left to right | few inputs, many outputs |
+| **Reverse mode** (backprop) | right to left | **many inputs, one scalar output** |
+
+ML is always the second case — millions of parameters, one scalar loss. Going right to left means you propagate a small row vector backwards instead of dragging a large Jacobian forwards, which is why training is feasible at all.
+
+---
+
+*Companion to `src/exam-sheet.md`. Regenerate with `python3 cheatsheet/build.py`.*

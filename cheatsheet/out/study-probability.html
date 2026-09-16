@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Study Reference — Probability</title>
+<link rel="stylesheet" href="../vendor/katex.min.css">
+<style>
+  :root { --rule: #d0d0d0; --muted: #555; --accent: #1a4a7a; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    margin: 0 auto;
+    color: #111;
+  }
+
+  h1 { border-bottom: 3px solid var(--accent); padding-bottom: .15em; margin-top: 0; }
+  h2 { color: var(--accent); border-bottom: 1.5px solid var(--rule); padding-bottom: .1em; }
+  h3 { margin-bottom: .3em; }
+  h4 { color: var(--muted); margin-bottom: .2em; }
+
+  table { border-collapse: collapse; width: 100%; margin: .5em 0; }
+  th, td { border: 1px solid var(--rule); padding: .25em .45em; text-align: left; vertical-align: top; }
+  th { background: #f2f5f8; font-weight: 600; }
+
+  code { background: #f4f4f4; padding: .1em .25em; border-radius: 3px; font-size: .9em; }
+  pre { background: #f7f7f7; padding: .5em .7em; border-radius: 4px; overflow-x: auto; line-height: 1.25; }
+  pre code { background: none; padding: 0; }
+
+  blockquote {
+    border-left: 3px solid var(--accent); margin: .5em 0; padding: .15em .8em;
+    background: #f7fafd; color: #333;
+  }
+
+  hr { border: none; border-top: 1px solid var(--rule); margin: 1.2em 0; }
+  ul, ol { margin: .3em 0; padding-left: 1.3em; }
+  li { margin: .1em 0; }
+  .katex-display { margin: .4em 0; }
+
+  body { font-size: 10.5pt; line-height: 1.5; max-width: 50em; padding: 1.5em; }
+  h1 { font-size: 20pt; }
+  h2 { font-size: 15pt; margin-top: 1.8em; }
+  h3 { font-size: 12pt; margin-top: 1.2em; }
+  h4 { font-size: 10.5pt; margin-top: .8em; }
+  table { font-size: 10pt; }
+  pre { font-size: 9pt; }
+
+  @page { margin: 14mm; }
+
+  @media print {
+    body { max-width: none; padding: 0; font-size: 10pt; }
+    h1, h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
+    table, pre, blockquote, tr { break-inside: avoid; page-break-inside: avoid; }
+    .katex-display { break-inside: avoid; page-break-inside: avoid; }
+    h2 { break-before: page; page-break-before: page; }
+    h2:first-of-type { break-before: auto; page-break-before: auto; }
+  }
+</style>
+</head>
+<body>
+<div id="content">Rendering&hellip;</div>
+
+<script type="text/markdown" id="source"># Probability — Study Reference
+
+*BSE Brush-Up 2026 · Wielath · companion to the exam sheet · refs: Wasserman ch. 1–2, Deisenroth ch. 6*
+
+Read this to build intuition; use the exam sheet to look things up. Worked examples here are from lectures or invented — **the problem sets are deliberately left unspoiled** so you can use these guides to attempt them.
+
+**Contents**
+1. Set theory — the vocabulary
+2. Probability spaces and the axioms
+3. Counting
+4. Independence
+5. Conditional probability
+6. Conditional independence
+7. Chain rule and the law of total probability
+8. Bayes' theorem
+9. Random variables, CDFs and densities
+10. The distribution catalogue
+11. Expectation and variance
+12. Sample moments
+13. Covariance and correlation
+14. Conditional expectation and variance
+15. Transformations of random variables
+16. The multivariate normal
+17. Inequalities of expectations
+
+*⬜ Generating functions and convergence/LLN/CLT to follow.*
+
+---
+
+## 1. Set theory — the vocabulary
+
+### Why start here
+
+Probability is measure theory wearing a friendly hat. An **event** is a *set* of outcomes, and every probability manipulation you'll do is a set manipulation first and an arithmetic one second. Getting fluent with unions, intersections and complements now means that later, when you see $P\big((A\cup B)^c\big)$, you rewrite it without thinking.
+
+### The operations
+
+| | Definition |
+|---|---|
+| **Union** | $A\cup B=\{u : u\in A \text{ or } u\in B\}$ |
+| **Intersection** | $A\cap B=\{u : u\in A \text{ and } u\in B\}$ |
+| **Complement** | $A^c=\{u\in M : u\notin A\}$ — everything in the universe that isn't in $A$ |
+| **Relative complement** | $A\setminus B=\{u : u\in A,\ u\notin B\}=A\cap B^c$ |
+
+Note the last identity: **set difference is just intersection with a complement.** "In $A$ but not $B$" and "in $A$ and in not-$B$" are the same sentence.
+
+A useful special case: if $A$ and $B$ are disjoint then $A\setminus B=A$ — there was nothing to remove.
+
+### De Morgan's laws
+
+$$(A\cup B)^c=A^c\cap B^c \qquad\qquad (A\cap B)^c=A^c\cup B^c$$
+
+In words: *"not in any"* becomes *"in none of them"*, and *"not in all"* becomes *"missing from at least one"*.
+
+They generalise to arbitrary collections:
+
+$$\left(\bigcup_{i\in I}A_i\right)^c=\bigcap_{i\in I}A_i^c \qquad \left(\bigcap_{i\in I}A_i\right)^c=\bigcup_{i\in I}A_i^c$$
+
+**Why they matter in probability:** complements are often much easier to compute. "At least one success" is an awkward union; "no successes" is a clean intersection, and under independence it's a product. De Morgan is what licenses the swap.
+
+> **The standard proof technique**, worth knowing because this style recurs: to show two sets are equal, take an **arbitrary element $\omega$** and show $\omega\in S_1 \iff \omega\in S_2$, unwinding the definitions one step at a time. Since $\omega$ was arbitrary, the sets coincide. You'll use this shape repeatedly.
+
+### Power set
+
+$2^A$ is the set of **all subsets** of $A$, including $\varnothing$ and $A$ itself.
+
+The notation is a hint: if $\lvert A\rvert=n$ then $\lvert 2^A\rvert=2^n$, because each element is independently either in or out of a given subset.
+
+For $D=\{0,1\}$: $\ 2^D=\{\varnothing,\ \{0\},\ \{1\},\ \{0,1\}\}$ — four subsets, $2^2=4$ ✓
+
+### Disjointness and partitions
+
+$A_1,A_2,\dots$ are **pairwise disjoint** (or *mutually exclusive*) if
+
+$$A_i\cap A_j=\varnothing \quad\text{whenever } i\neq j$$
+
+Note "pairwise" — every *pair* must be disjoint. It's stronger than requiring the overall intersection to be empty.
+
+A **partition** of $M$ is a sequence of disjoint sets whose union is all of $M$:
+
+$$\bigcup_{i\in I}A_i=M$$
+
+```
+ ┌──────┬──────┬──────┐   Disjoint  → no overlaps
+ │  A₁  │  A₂  │  A₃  │   Exhaustive → nothing left over
+ └──────┴──────┴──────┘
+```
+
+**Partitions are the engine of §7 and §8.** The law of total probability and Bayes' theorem both require one, and forgetting to check that your candidate sets are genuinely disjoint *and* exhaustive is a classic way to get a wrong answer that looks plausible.
+
+### Indicator function
+
+$$\mathbb{1}_A(s)=\begin{cases}1 & \text{if } s\in A\\ 0 & \text{if } s\notin A\end{cases}$$
+
+A function that answers "is this element in $A$?" with a number rather than a yes/no. It looks trivial, but converting set membership into arithmetic is what lets you write $P(A)=E[\mathbb{1}_A]$ later, and it turns counting problems into sums.
+
+In your terms: it's a `CASE WHEN ... THEN 1 ELSE 0 END`, and it's used for exactly the same reason — so you can `SUM()` it.
+
+---
+
+## 2. Probability spaces and the axioms
+
+### Sample space and events
+
+$$\Omega=\text{the set of possible outcomes of an experiment}$$
+
+**Subsets of $\Omega$ are called events.**
+
+Toss a coin twice:
+
+$$\Omega=\{HH,\ HT,\ TH,\ TT\}$$
+
+The event "first toss is heads" is the subset $\{HH,\ HT\}$.
+
+Note what an event *is*: not a single outcome but a **collection** of them. "First toss heads" is satisfied by two different outcomes, so it's the set containing both.
+
+### What "$A$ has occurred" means
+
+Worth pinning down, because the language is loose. An experiment produces a **single** outcome $\omega\in\Omega$. We say $A$ has occurred if $\omega\in A$. So
+
+$$P(A) \text{ is } P(\omega\in A)$$
+
+This clarifies nesting. Roll a fair die with $A=\{2\}$ and $B=\{2,4,6\}$, so $A\subseteq B$:
+
+$$\omega\in A \implies \omega\in B \qquad\text{but}\qquad \omega\in B \nRightarrow \omega\in A$$
+
+Rolling a 2 means "even" occurred. "Even" occurring doesn't tell you it was a 2. Containment of events is one-directional implication, which is why $A\subseteq B\Rightarrow P(A)\le P(B)$.
+
+### The three axioms
+
+A function $P$ assigning a real number $P(A)$ to each event $A$ is a **probability distribution** (or **measure**) if:
+
+| | |
+|---|---|
+| **Axiom 1** | $P(A)\ge0$ for every $A$ |
+| **Axiom 2** | $P(\Omega)=1$ |
+| **Axiom 3** | if $A_1,A_2,\dots$ are pairwise disjoint, $P\left(\bigcup_{i\in I}A_i\right)=\sum_{i\in I}P(A_i)$ |
+
+That's the entire foundation. Everything else is derived.
+
+Axiom 1 says probabilities aren't negative. Axiom 2 normalises — *something* happens. Axiom 3, **countable additivity**, is the substantive one: for non-overlapping events, probabilities add.
+
+> **Why "pairwise disjoint" is essential in Axiom 3.** If the events overlap, adding their probabilities counts the overlap more than once. The whole of §2's inclusion–exclusion formula exists to repair exactly that.
+
+### Derived properties
+
+Each follows from the axioms in a line or two:
+
+$$P(\varnothing)=0 \qquad 0\le P(A)\le1 \qquad A\subseteq B\Rightarrow P(A)\le P(B) \qquad P(A^c)=1-P(A)$$
+
+The last one is the workhorse. **When a problem says "at least one", compute the complement instead** — "none" is almost always easier.
+
+### Inclusion–exclusion
+
+For **any** two events:
+
+$$P(A\cup B)=P(A)+P(B)-P(A\cap B)$$
+
+```
+    ╭────╮╭────╮     Adding P(A) and P(B) counts the
+    │ A  ││ B  │     overlap twice, so subtract it once.
+    ╰────╯╰────╯
+        A∩B
+```
+
+If $A$ and $B$ are **disjoint**, $P(A\cap B)=0$ and it collapses to $P(A\cup B)=P(A)+P(B)$ — consistent with Axiom 3.
+
+> ⚠️ Only drop the correction term when you've *checked* disjointness. Silently assuming it is one of the most common sources of a wrong-but-plausible answer.
+
+### Continuity of probability
+
+A result you'll meet as an exercise, worth knowing exists: if $A_1\subseteq A_2\subseteq A_3\subseteq\cdots$ is an **increasing** sequence of events and $A=\bigcup_{i=1}^\infty A_i$, then
+
+$$P(A)=\lim_{i\to\infty}P(A_i)$$
+
+This is **continuity of probability from below**. It says probability behaves sensibly under limits — you can approximate an event by a growing sequence and the probabilities converge.
+
+> **The standard proof technique:** convert the *increasing* sequence into a *disjoint* one by taking differences, $B_1=A_1$ and $B_{i+1}=A_{i+1}\setminus A_i$ — each $B_i$ holds exactly the new points added at step $i$. Now Axiom 3 applies, and the resulting sum **telescopes**. Remembering "increasing sequence → take differences → telescope" is enough to reconstruct the argument.
+
+---
+
+## 3. Counting
+
+### The equally-likely formula
+
+If $\Omega=\{\omega_1,\dots,\omega_n\}$ and **every outcome is equally likely**, then
+
+$$P(A)=\frac{\lvert A\rvert}{\lvert\Omega\rvert}$$
+
+where $\lvert\cdot\rvert$ is the **cardinality** of the set — its number of elements.
+
+> ⚠️ **"Equally likely" is an assumption, not a default.** It holds for a fair die and fails for a loaded one. When it holds, probability reduces to counting; when it doesn't, this formula is simply wrong.
+
+### Two counting rules
+
+**Ordering.** $n$ distinct objects can be arranged in
+
+$$n!=n(n-1)(n-2)\cdots3\cdot2\cdot1$$
+
+ways. With the convention $0!=1!=1$.
+
+*(Why $0!=1$? There's exactly one way to arrange nothing — the empty arrangement. It also makes the formulas below work without special cases.)*
+
+**Choosing.** $k$ objects can be chosen from $n$ in
+
+$$\binom nk=\frac{n!}{k!\,(n-k)!}$$
+
+ways — the **binomial coefficient**, read "$n$ choose $k$".
+
+The formula has a story: $n!$ orders all $n$ objects; dividing by $k!$ says we don't care about the order *within* our chosen group; dividing by $(n-k)!$ says we don't care about the order of the ones left behind.
+
+**Useful identities:**
+
+$$\binom n0=\binom nn=1 \qquad\qquad \binom nk=\binom n{n-k}$$
+
+The second is worth internalising: **choosing $k$ to take in is the same as choosing $n-k$ to leave out.** It also halves your work — $\binom{20}{17}$ is unpleasant, $\binom{20}{3}$ is easy, and they're equal.
+
+### Worked example
+
+Select 3 students from a class of 20. Order doesn't matter, so:
+
+$$\binom{20}{3}=\frac{20!}{3!\,(20-3)!}=\frac{20!}{3!\,17!}=\frac{20\times19\times18}{3\times2\times1}=\frac{6840}{6}=1140$$
+
+> **Never compute $20!$.** It has 19 digits. The $17!$ in the denominator cancels all but the top three factors, leaving arithmetic you can do in your head. **Cancel symbolically first, multiply last** — this applies to essentially every combinatorics calculation you'll do by hand.
+
+### Which rule to use
+
+The question to ask is always: **does order matter?**
+
+- "How many ways to *arrange*…" / "in how many *orders*…" → factorials, permutations
+- "How many ways to *choose* / *select* a group…" → $\binom nk$
+
+Getting this backwards is the most common error in counting problems, and it's usually worth 30 seconds of thought before any arithmetic.
+
+---
+
+## 4. Independence
+
+### Definition
+
+Two events $A$ and $B$ are **independent** if
+
+$$P(A,B)=P(A)\cdot P(B)$$
+
+written $A\perp\!\!\!\perp B$. Recall $P(A,B)$, $P(A\cap B)$ and $P(AB)$ all denote the same thing.
+
+Independence is **often assumed** in statistics (i.i.d. samples, independent errors) and can **sometimes be verified**. Knowing which situation you're in matters: an assumed independence that's false quietly invalidates everything built on it.
+
+### What it means
+
+The product rule looks arbitrary until you connect it to §5: independence is equivalent to
+
+$$P(A\mid B)=P(A)$$
+
+**Knowing $B$ occurred tells you nothing about whether $A$ did.** That's the real content; the product formula is just the version that's symmetric and doesn't require $P(B)>0$.
+
+### Verifying it
+
+Roll a fair die. $A=\{2,4,6\}$ (even), $B=\{1,2,3,4\}$.
+
+$$A\cap B=\{2,4\} \Rightarrow P(A\cap B)=\tfrac26=\tfrac13$$
+$$P(A)=\tfrac36=\tfrac12, \quad P(B)=\tfrac46=\tfrac23 \Rightarrow P(A)P(B)=\tfrac12\cdot\tfrac23=\tfrac13$$
+
+Equal, so $A\perp\!\!\!\perp B$.
+
+Note this is slightly surprising — the events overlap substantially, and there's no obvious "physical" reason for independence. **Independence is an arithmetic coincidence about probabilities, not a statement about causation or physical separation.** It either holds numerically or it doesn't.
+
+### ⭐ Disjoint events are not independent
+
+This catches people constantly, because both words sound like "unrelated".
+
+Take $A=\{1,3,5\}$ and $B=\{2,4,6\}$ on a fair die. These are **disjoint**: $A\cap B=\varnothing$.
+
+$$P(A)=P(B)=\tfrac12 \Rightarrow P(A)P(B)=\tfrac14$$
+$$P(A\cap B)=P(\varnothing)=0$$
+
+$$\tfrac14\neq0 \quad\Longrightarrow\quad A\not\perp\!\!\!\perp B$$
+
+**Why, intuitively:** disjoint means they *can't both happen*. So learning that $A$ occurred tells you, with certainty, that $B$ did not. That is an enormous amount of information — the opposite of independence.
+
+> **Disjoint events are maximally dependent, not independent.** If $P(A)>0$ and $P(B)>0$ then disjoint $\Rightarrow$ not independent, and independent $\Rightarrow$ not disjoint. The two properties exclude each other.
+
+### The degenerate cases
+
+The positive-probability caveat above isn't decoration. If $P(A)=0$ then $P(A\cap B)\le P(A)=0$, so $P(A\cap B)=0=P(A)P(B)$ trivially — **an event of probability zero is independent of everything**, including itself and including disjoint events.
+
+The same holds if $P(A)=1$.
+
+And the converse is a neat characterisation: if $A$ is independent **of itself**, then $P(A\cap A)=P(A)P(A)$, i.e. $P(A)=P(A)^2$, so $P(A)\big(1-P(A)\big)=0$ and
+
+$$P(A)=0 \quad\text{or}\quad P(A)=1$$
+
+**The only self-independent events are the certain and the impossible.**
+
+### Complements inherit independence
+
+If $A\perp\!\!\!\perp B$, then $A^c\perp\!\!\!\perp B$, and $A\perp\!\!\!\perp B^c$, and $A^c\perp\!\!\!\perp B^c$.
+
+Intuitively obvious — if $B$ tells you nothing about $A$, it tells you nothing about *not* $A$ either. The proof splits $B$ into the part inside $A$ and the part outside, which is the standard move for this family of results.
+
+### Using independence
+
+Independence turns intersections into products, which is what makes calculations tractable.
+
+**Worked (from lectures).** Toss a fair coin 10 times; let $A$ = "at least one head".
+
+Direct computation of $A$ means summing over every outcome with one or more heads — 1023 of them. Instead take the complement:
+
+$$P(A)=1-P(A^c)$$
+
+where $A^c$ = "no heads" = "all tails" =$\{T_1,T_2,\dots,T_{10}\}$ as a joint event. By **independence** of the tosses:
+
+$$P(A^c)=P(T_1)P(T_2)\cdots P(T_{10})=\left(\tfrac12\right)^{10}=\tfrac1{1024}$$
+
+$$P(A)=1-\tfrac1{1024}\approx0.999$$
+
+> **The pattern: "at least one" → complement → independence → product.** It shows up constantly, and the reason it works is that "none" is a single intersection while "at least one" is a messy union.
+
+---
+
+## 5. Conditional probability
+
+### Definition
+
+For $P(B)>0$, the conditional probability of $A$ given $B$ is
+
+$$P(A\mid B)=\frac{P(A,B)}{P(B)}$$
+
+```
+   ┌─────────────────────┐ Ω    Conditioning on B shrinks the
+   │    ╭────╮╭────╮     │      universe from Ω down to B.
+   │    │ A  ││ B  │     │      You're asking: of the outcomes
+   │    ╰────╯╰────╯     │      in B, what fraction are in A?
+   └─────────────────────┘
+```
+
+The denominator **renormalises**. You've learned that the outcome lies in $B$, so $B$ becomes your new sample space, and dividing by $P(B)$ rescales so the new probabilities sum to 1.
+
+The requirement $P(B)>0$ isn't a technicality: you can't condition on something impossible, and the formula would divide by zero.
+
+### Three notes
+
+**1. $P(A\mid B)\neq P(B\mid A)$ in general.**
+
+The most consequential error in the subject. $P(\text{positive test}\mid\text{disease})$ and $P(\text{disease}\mid\text{positive test})$ are wildly different numbers — see §8.
+
+**2. For fixed $B$, the function $P(\cdot\mid B)$ *is* a probability measure.**
+
+It satisfies all three axioms. Practically: **every identity you know still works inside a conditional.** $P(A^c\mid B)=1-P(A\mid B)$, inclusion–exclusion holds, and so on. You can do probability "inside $B$" exactly as you would normally.
+
+**3. $P(B\mid\cdot)$ is *not* a probability measure.**
+
+Vary the *conditioning* argument instead of the first, and the axioms fail — there's no reason for $\sum_i P(B\mid A_i)$ to equal 1. This object has its own name: the **likelihood**.
+
+> ⚠️ This distinction is subtle and very examinable. **First argument varies → probability measure. Second argument varies → likelihood.** The likelihood is the central object of statistical inference, and the fact that it isn't a probability distribution over the conditioning variable is precisely why Bayes' theorem needs a normalising constant.
+
+### Independence, restated
+
+If $A\perp\!\!\!\perp B$ then
+
+$$P(A\mid B)=\frac{P(A,B)}{P(B)}=\frac{P(A)P(B)}{P(B)}=P(A)$$
+
+So **independence means conditioning changes nothing.** This is usually the more intuitive definition; the product form is the more convenient one.
+
+---
+
+## 6. Conditional independence
+
+### Definition
+
+Let $A$, $B$, $C$ be events with $P(C)>0$. Then $A$ and $B$ are **conditionally independent given $C$** iff
+
+$$P(A,B\mid C)=P(A\mid C)\cdot P(B\mid C)$$
+
+equivalently
+
+$$P(A\mid B,C)=P(A\mid C) \qquad\text{or}\qquad P(B\mid A,C)=P(B\mid C)$$
+
+Written $A\perp\!\!\!\perp B\mid C$.
+
+It's exactly the definition of independence, with every probability replaced by its conditional-on-$C$ version — which makes sense given note 2 above: $P(\cdot\mid C)$ is a perfectly good probability measure, so you can define independence within it.
+
+**In words:** *once you know $C$, learning $A$ tells you nothing further about $B$.*
+
+### ⭐ Neither implication holds
+
+$$A\perp\!\!\!\perp B \ \not\Longrightarrow\ A\perp\!\!\!\perp B\mid C$$
+$$A\perp\!\!\!\perp B\mid C \ \not\Longrightarrow\ A\perp\!\!\!\perp B$$
+
+**Marginal and conditional independence are logically unrelated.** Neither is stronger; neither implies the other. This trips up nearly everyone on first encounter, and it's the sort of one-way-implication question that exams love.
+
+### The counterexample worth memorising
+
+From your lectures. Two flips of a fair coin, $\Omega=\{HH,HT,TH,TT\}$, each outcome probability $\tfrac14$.
+
+$$A=\{\text{1st toss } H\}=\{HH,HT\}, \qquad B=\{\text{2nd toss } H\}=\{HH,TH\}$$
+
+**Marginally independent?**
+
+$$P(A)=P(B)=\tfrac24=\tfrac12, \qquad P(A,B)=P(\{HH\})=\tfrac14=\tfrac12\cdot\tfrac12 \ \checkmark$$
+
+Yes — as you'd expect for two separate flips.
+
+**Now condition on** $C=\{\text{number of heads}\ge1\}=\{HH,HT,TH\}$, so $P(C)=\tfrac34$:
+
+$$P(A\mid C)=\frac{P(A\cap C)}{P(C)}=\frac{2/4}{3/4}=\tfrac23, \qquad P(B\mid C)=\tfrac23$$
+
+$$P(A,B\mid C)=\frac{P(\{HH\})}{P(C)}=\frac{1/4}{3/4}=\tfrac13$$
+
+$$\tfrac13 \neq \tfrac23\cdot\tfrac23=\tfrac49 \quad\Longrightarrow\quad A\not\perp\!\!\!\perp B\mid C$$
+
+**Independent, but not conditionally independent.**
+
+> **Why conditioning creates dependence.** $C$ says at least one head occurred. If you now learn the first toss was heads, that "explains" $C$ on its own, and the second toss reverts to an ordinary 50/50 — but you've compared against a baseline of $\tfrac23$, which was elevated by the knowledge that *some* head occurred. Learning about one cause makes the other less necessary.
+>
+> This is called **explaining away**, and it's a genuine phenomenon, not an artefact. Two independent causes of a common effect become dependent once you observe the effect.
+
+The reverse failure also occurs: variables can be conditionally independent given $C$ while being marginally dependent — which is exactly what happens when $C$ is a common cause driving both.
+
+---
+
+## 7. Chain rule and the law of total probability
+
+### Product / chain rule
+
+Rearranging the definition of conditional probability:
+
+$$P(A,B)=P(A\mid B)P(B)=P(B\mid A)P(A)$$
+
+Two decompositions of the same joint probability. **Which one you use is a choice, and choosing well is often the entire trick** — pick whichever conditional you actually know.
+
+It extends to any number of events:
+
+$$P(A,B,C)=P(A\mid B,C)\,P(B,C)=P(A\mid B,C)\,P(B\mid C)\,P(C)$$
+
+and the ordering is free:
+
+$$=P(B\mid C,A)\,P(C\mid A)\,P(A)=\cdots$$
+
+**Peel off one variable at a time, conditioning on everything left.** The general pattern:
+
+$$P(A_1,\dots,A_n)=P(A_1\mid A_2,\dots,A_n)\,P(A_2\mid A_3,\dots,A_n)\cdots P(A_n)$$
+
+This factorisation is the foundation of graphical models and of every sequential Bayesian update.
+
+### Law of total probability
+
+Let $A_1,A_2,\dots,A_K$ be a **partition** of $\Omega$. Then for any event $B$:
+
+$$P(B)=\sum_{i=1}^{K}P(B\mid A_i)\,P(A_i)$$
+
+**Derivation.** Because the $A_i$ partition $\Omega$, the event $B$ is carved into disjoint pieces:
+
+$$B=(B\cap A_1)\cup(B\cap A_2)\cup\cdots\cup(B\cap A_K)$$
+
+These are disjoint (since the $A_i$ are), so Axiom 3 gives
+
+$$P(B)=\sum_{i=1}^{K}P(B\cap A_i)=\sum_{i=1}^{K}P(B\mid A_i)P(A_i)$$
+
+using the chain rule at the last step.
+
+```
+ ┌──────┬──────┐ Ω    B is sliced by the partition.
+ │  A₁  │  A₂  │      Compute P(B) within each slice,
+ │   ╭──┴──╮   │      then weight by how likely that
+ ├───┤  B  ├───┤      slice is, and add.
+ │  A₃╰──┬──╯A₄ │
+ └──────┴──────┘
+```
+
+**What it's for:** you rarely know $P(B)$ directly, but you often know $P(B\mid A_i)$ for each scenario $A_i$ and how likely each scenario is. The law assembles the unconditional answer from conditional pieces.
+
+> ⚠️ **Check the partition.** The $A_i$ must be **disjoint** (no double counting) and **exhaustive** (nothing missed). Both conditions are load-bearing, and a set of scenarios that merely *feels* comprehensive isn't good enough.
+
+---
+
+## 8. Bayes' theorem
+
+### The statement
+
+Let $A_1,\dots,A_K$ be a partition of $\Omega$ with $P(A_i)>0$ for each $i$. If $P(B)>0$, then for each $i=1,\dots,K$:
+
+$$P(A_i\mid B)=\frac{P(A_i\cap B)}{P(B)}=\frac{P(A_i\cap B)}{\sum_{i=1}^K P(B\cap A_i)}=\frac{P(B\mid A_i)\,P(A_i)}{\sum_{i=1}^{K}P(B\mid A_i)\,P(A_i)}$$
+
+**It's two substitutions into the definition of conditional probability:** chain rule on the numerator, law of total probability on the denominator. Nothing more. If you remember those two ingredients you can rebuild Bayes from scratch, which is safer than memorising it.
+
+### The vocabulary
+
+| Term | Name | Meaning |
+|---|---|---|
+| $P(A_i)$ | **prior** | what you believed before seeing the evidence |
+| $P(B\mid A_i)$ | **likelihood** | how well hypothesis $A_i$ explains the evidence |
+| $P(A_i\mid B)$ | **posterior** | what you believe after |
+| denominator | **evidence** | normalising constant; makes the posteriors sum to 1 |
+
+Bayes reverses the direction of conditioning. You typically *know* $P(\text{evidence}\mid\text{hypothesis})$ — that's how measurement instruments are characterised — but you *want* $P(\text{hypothesis}\mid\text{evidence})$.
+
+### ⭐ Worked example — the rare disease
+
+The single most important example in the topic. From lectures.
+
+Let $D$ = "individual has the disease", with prevalence
+
+$$P(D)=\tfrac1{1000}=0.001$$
+
+A test returns $+$ or $-$, characterised by:
+
+| Given | Standard name |
+|---|---|
+| $P(+\mid D)=0.95$ | **sensitivity**, recall, or true positive rate (TPR) |
+| $P(-\mid D)=1-0.95=0.05$ | false negative rate |
+| $P(-\mid D^c)=0.99$ | **specificity**, or true negative rate (TNR) |
+| $P(+\mid D^c)=1-0.99=0.01$ | false positive rate |
+
+**Question: does a positive test mean a 95% chance of being sick?**
+
+Apply Bayes, with $\{D,D^c\}$ as the partition:
+
+$$P(D\mid+)=\frac{P(D,+)}{P(+)}=\frac{P(+\mid D)\,P(D)}{P(+\mid D)P(D)+P(+\mid D^c)P(D^c)}$$
+
+$$=\frac{0.95\times0.001}{0.95\times0.001+0.01\times0.999}=\frac{0.00095}{0.00095+0.00999}=\frac{0.00095}{0.01094}\approx0.087$$
+
+$$\boxed{P(D\mid+)\approx8.7\%}$$
+
+**Not 95%. Under 9%.**
+
+> **Why the intuition fails.** Compare the two terms in the denominator:
+>
+> - True positives: $0.95\times0.001=0.00095$
+> - False positives: $0.01\times0.999=0.00999$
+>
+> **The false positives outnumber the true positives more than ten to one.** The test is accurate, but it's applied to a population that is 99.9% healthy, and 1% of a huge number beats 95% of a tiny one.
+>
+> The lesson: **the posterior depends on the base rate, not just the test's accuracy.** Ignoring this is the *base rate fallacy*, and it's responsible for a great deal of real-world misinterpretation of medical and screening results.
+
+### ⭐ Sequential updating — a second test
+
+Suppose the patient takes a second test and it's also positive. Write $t_1$ and $t_2$ for the first and second positive results.
+
+$$P(D\mid t_1,t_2)=\frac{P(D,t_1,t_2)}{P(t_1,t_2)}=\frac{P(D,t_1,t_2)}{P(t_1,t_2,D)+P(t_1,t_2,D^c)}$$
+
+Apply the **chain rule** to each joint probability, choosing the ordering that exposes what we know:
+
+$$P(D,t_1,t_2)=P(t_2\mid t_1,D)\,P(D\mid t_1)\,P(t_1)$$
+
+The $P(t_1)$ factors appear in every term and **cancel**:
+
+$$P(D\mid t_1,t_2)=\frac{P(t_2\mid D,t_1)\,P(D\mid t_1)}{P(t_2\mid D,t_1)P(D\mid t_1)+P(t_2\mid D^c,t_1)P(D^c\mid t_1)}$$
+
+Now assume the two tests are **conditionally independent given disease status** — the result of the second test depends only on whether you're sick, not on what the first test said. Then $P(t_2\mid D,t_1)=P(t_2\mid D)=0.95$ and $P(t_2\mid D^c,t_1)=P(t_2\mid D^c)=0.01$:
+
+$$P(D\mid t_1,t_2)=\frac{0.95\times0.08684}{0.95\times0.08684+0.01\times(1-0.08684)}=\frac{0.0825}{0.0825+0.00913}\approx0.90$$
+
+$$\boxed{P(D\mid t_1,t_2)\approx90\%}$$
+
+**From 8.7% to 90% on a second positive.**
+
+> **Two things to take from this.**
+>
+> **1. The posterior becomes the new prior.** Notice $P(D\mid t_1)=0.08684$ appears exactly where $P(D)$ sat in the first calculation. That's the whole of Bayesian updating: yesterday's posterior is today's prior, and evidence accumulates.
+>
+> **2. The conditional independence assumption is doing real work.** If the second test shares a systematic bias with the first — the same faulty batch, or a patient whose biology confuses the assay — then $t_2$ carries much less new information than the calculation assumes, and 90% is an overestimate. **Repeating a measurement only helps if the errors are independent.**
+
+---
+
+## 9. Random variables, CDFs and densities
+
+### The shift in perspective
+
+Everything so far has been about *events* — subsets of $\Omega$. A **random variable** attaches a **number** to each outcome:
+
+$$X:\Omega\to\mathbb{R}$$
+
+This is the move that lets you do arithmetic. "The coin came up heads" isn't something you can average; "$X=1$" is. Once outcomes carry numbers you can talk about means, variances, and limits.
+
+A **random vector** is the multivariate version: $X=[X_1\ \cdots\ X_N]^\top$ where each component is itself a random variable.
+
+> The name is doubly misleading: a random variable is neither random nor a variable. It's a deterministic **function** from outcomes to numbers. The randomness lives in which $\omega$ occurs, not in $X$.
+
+### The CDF
+
+$$F_X(x)=P(X\le x)$$
+
+The **cumulative distribution function** works for discrete and continuous variables alike, which is why it's the more fundamental object.
+
+Three defining properties:
+
+1. **Non-decreasing** — $x_1<x_2\Rightarrow F(x_1)\le F(x_2)$. Accumulating more of the line can't reduce the probability.
+2. **Limits** — $\lim_{x\to-\infty}F(x)=0$ and $\lim_{x\to\infty}F(x)=1$.
+3. **Right-continuous** — $\lim_{y\to x^+}F(y)=F(x)$. This follows from the $\le$ in the definition.
+
+Any function with these three properties **is** a CDF of some random variable. (Which is why a convex combination $\lambda F+(1-\lambda)G$ of two CDFs is again a CDF — each property survives the mixture.)
+
+### Reading probabilities off a CDF
+
+$$P(X>x)=1-F(x)$$
+
+Complement rule, nothing more.
+
+$$P(x<X\le y)=F(y)-F(x) \quad\text{for } x<y$$
+
+Because $\{x<X\le y\}=\{X\le y\}\setminus\{X\le x\}$ and the smaller event is contained in the larger.
+
+$$P(X=x)=F(x)-\lim_{y\to x^-}F(y)$$
+
+**$P(X=x)$ is the size of the jump in $F$ at $x$.** Decompose $\{X\le x\}=\{X<x\}\cup\{X=x\}$ — disjoint — so $P(X=x)=F(x)-P(X<x)$, and $P(X<x)$ is the left limit.
+
+> ⭐ **Consequence: a continuous CDF has no jumps, so $P(X=x)=0$ for every single point.** That's not a paradox — a continuous variable takes *some* value, but any *specified* value has probability zero. Probability lives in intervals, not points.
+>
+> The argument that $P(X<x)$ equals the left limit uses **continuity from below** (§2) applied to $A_n=\{X\le x-\tfrac1n\}$ — a nice illustration of why that abstract-looking result earns its place.
+
+### PMF and PDF
+
+**Discrete:**
+
+$$f_X(x)=P(X=x), \qquad \sum_x f_X(x)=1$$
+
+**Continuous:** a **density** $f_X$ with
+
+$$f_X(x)\ge0, \qquad \int_{-\infty}^{\infty}f_X(x)\,dx=1, \qquad f_X(x)=F_X'(x)$$
+
+> ⚠️ **A density is not a probability.** $f_X(x)$ can exceed 1 — a $\text{Unif}(0,\tfrac12)$ density equals 2 everywhere on its support. Only **areas** are probabilities. The two conditions above (non-negative, integrates to 1) are exactly what you check when asked to find a normalising constant.
+
+### Joint distributions
+
+$$F(x,y)=P(X\le x,\ Y\le y)$$
+
+For a rectangle $(a,b]\times(c,d]$:
+
+$$P(a<X\le b,\ c<Y\le d)=F(b,d)-F(a,d)-F(b,c)+F(a,c)$$
+
+```
+  Y│
+  d├──────┬──────┐    Start with the big rectangle F(b,d).
+   │F(a,d)│ want │    Subtract the left strip F(a,d) and
+  c├──────┼──────┤    the bottom strip F(b,c). The corner
+   │F(a,c)│F(b,c)│    F(a,c) got removed twice — add it back.
+   └──────┴──────┴─→ X
+          a      b
+```
+
+**It's inclusion–exclusion on corners.** The same add-back logic as $P(A\cup B)=P(A)+P(B)-P(A\cap B)$.
+
+---
+
+## 10. The distribution catalogue
+
+A distribution is a *model*. The skill is recognising which situation calls for which — the formulas you can look up.
+
+### Discrete
+
+| | Support | PMF | $E[X]$ | $\text{Var}(X)$ |
+|---|---|---|---|---|
+| $\text{Bern}(p)$ | $\{0,1\}$ | $p^x(1-p)^{1-x}$ | $p$ | $p(1-p)$ |
+| $\text{B}(n,p)$ | $\{0,1,\dots,n\}$ | $\dbinom nx p^x(1-p)^{n-x}$ | $np$ | $np(1-p)$ |
+| $\text{Pois}(\lambda)$ | $\mathbb{N}_0$ | $e^{-\lambda}\dfrac{\lambda^x}{x!}$ | $\lambda$ | $\lambda$ |
+
+**Bernoulli** — a single binary outcome. Tossing one coin. The PMF $p^x(1-p)^{1-x}$ is a trick to write both cases in one line: at $x=1$ it gives $p$, at $x=0$ it gives $1-p$.
+
+Its variance is worth deriving once, because the method recurs: $E[X^2]=0^2(1-p)+1^2p=p$ (since $0^2=0$ and $1^2=1$, the second moment equals the first for a 0/1 variable), so
+
+$$\text{Var}(X)=E[X^2]-(E[X])^2=p-p^2=p(1-p)$$
+
+Maximised at $p=\tfrac12$ — a fair coin is the most unpredictable.
+
+**Binomial** — the number of successes in $n$ **independent** Bernoulli trials with probability $p$. It is literally a sum of $n$ i.i.d. Bernoullis, which is the easiest way to get its moments: $E[X]=np$ by linearity, and $\text{Var}(X)=np(1-p)$ because independent variances add.
+
+> ⚠️ **The PMF needs the binomial coefficient $\binom nx$.** Your lecture notes omit it. Without it the PMF doesn't sum to 1 — check $n=2$, $p=\tfrac12$: the uncorrected version gives $\tfrac14+\tfrac14+\tfrac14=\tfrac34$.
+>
+> The coefficient is there because $p^x(1-p)^{n-x}$ is the probability of **one particular** sequence with $x$ successes, and $\binom nx$ counts how many such sequences exist.
+
+**Poisson** — counts of independent events in a fixed period. Emails received in an hour, arrivals at a queue. The parameter $\lambda$ is the **long-run average count per period**.
+
+> Its signature: **mean $=$ variance $=\lambda$**. If sample data has variance much larger than its mean, that's evidence *against* a Poisson model (overdispersion).
+
+### Continuous
+
+| | Support | PDF | $E[X]$ | $\text{Var}(X)$ |
+|---|---|---|---|---|
+| $\text{Unif}(a,b)$ | $[a,b]$, $a<b$ | $\dfrac{1}{b-a}$ | $\dfrac{a+b}{2}$ | $\dfrac{(b-a)^2}{12}$ |
+| $\text{Exp}(\lambda)$ | $x\ge0$ | $\lambda e^{-\lambda x}$ | $\dfrac{1}{\lambda}$ | $\dfrac{1}{\lambda^2}$ |
+| $N(\mu,\sigma^2)$ | $\mathbb{R}$ | $\dfrac{1}{\sqrt{2\pi\sigma^2}}\exp\!\left(-\dfrac{1}{2\sigma^2}(x-\mu)^2\right)$ | $\mu$ | $\sigma^2$ |
+
+**Uniform** — constant density on $[a,b]$; no value is preferred. The height must be $\tfrac1{b-a}$ for the area to be 1.
+
+**Exponential** — the **waiting time between Poisson events**. The pairing is exact: if events arrive as a Poisson process at rate $\lambda$, the gaps are $\text{Exp}(\lambda)$.
+
+> $\lambda$ is a **rate**, and the mean is its reciprocal, $1/\lambda$. Events at 3 per hour ⟹ average wait of 20 minutes. Reading $\lambda$ as the mean is a common slip.
+>
+> ⚠️ Some texts parameterise by the **scale** $\theta=1/\lambda$ instead, with density $\tfrac1\theta e^{-x/\theta}$. Your course uses the **rate**. Watch for this when reading other sources — it also affects the Gamma.
+
+**Normal** — the one everything converges to. Parameters $\mu\in\mathbb{R}$ (mean) and $\sigma>0$.
+
+> ⚠️ Your notes label $\sigma^2$ as "standard deviation". **$\sigma^2$ is the variance; $\sigma$ is the standard deviation.** The constraint written beside it, $\sigma>0$, is correct.
+
+The normalising constant exists because
+
+$$\int_{-\infty}^{\infty}\exp\!\left(-\frac{1}{2\sigma^2}(x-\mu)^2\right)dx=\sqrt{2\pi\sigma^2}$$
+
+which is the Gaussian integral. Dividing by it makes the density integrate to 1.
+
+### Standardisation — the reason one table suffices
+
+For every $\mu,\sigma$ the distribution is different, **but**:
+
+$$X\sim N(\mu,\sigma^2) \ \Longrightarrow\ Z=\frac{X-\mu}{\sigma}\sim N(0,1)$$
+$$Z\sim N(0,1) \ \Longrightarrow\ X=\mu+\sigma Z\sim N(\mu,\sigma^2)$$
+
+Verify the moments directly:
+
+$$E\!\left[\frac{X-\mu}{\sigma}\right]=\frac{1}{\sigma}E[X-\mu]=\frac{1}{\sigma}(\mu-\mu)=0$$
+
+$$V\!\left(\frac{X-\mu}{\sigma}\right)=\frac{1}{\sigma^2}V(X-\mu)=\frac{1}{\sigma^2}V[X]=\frac{\sigma^2}{\sigma^2}=1$$
+
+Note the second line uses two rules from §11: shifting doesn't change variance, and scaling by $\tfrac1\sigma$ multiplies it by $\tfrac1{\sigma^2}$.
+
+**The standard normal** $Z\sim N(0,1)$ has PDF $\phi(z)$ and **CDF $\Phi(z)$**. $\Phi$ has no closed form, which is why it's tabulated — and why standardising is mandatory rather than optional.
+
+### Worked — both directions
+
+**Forward.** $X\sim N(3,5)$. Find $P(X>1)$. Note $\sigma^2=5$, so $\sigma=\sqrt5$.
+
+$$P(X>1)=1-P(X\le1)=1-P\!\left(\frac{X-3}{\sqrt5}\le\frac{1-3}{\sqrt5}\right)=1-P\!\left(Z\le\frac{-2}{\sqrt5}\right)=1-\Phi(-0.84)=0.81$$
+
+**Reverse (a quantile).** Find $q$ such that $P(X<q)=0.2$.
+
+$$P(X\le q)=P\!\left(\frac{X-\mu}{\sigma}\le\frac{q-\mu}{\sigma}\right)=\Phi\!\left(\frac{q-\mu}{\sigma}\right)=0.2$$
+
+From the table, $\Phi(-0.84)=0.2$, so
+
+$$\frac{q-3}{\sqrt5}=-0.84 \ \Longrightarrow\ q=3-0.84\sqrt5=1.12$$
+
+> **The recipe:** *forward* — value → standardise → look up $\Phi$. *Reverse* — probability → look up $z$ → unstandardise via $q=\mu+z\sigma$. Nearly every normal-distribution question is one of these two.
+
+---
+
+## 11. Expectation and variance
+
+### Expectation
+
+$$E[X]=\sum_x x\,f_X(x) \qquad\qquad E[X]=\int_{-\infty}^{\infty}x\,f_X(x)\,dx$$
+
+A **weighted average** of the values, weighted by probability. It need not be an attainable value — a fair die has $E[X]=3.5$.
+
+**LOTUS** (law of the unconscious statistician): to get $E[g(X)]$ you do **not** need the distribution of $g(X)$:
+
+$$E[g(X)]=\int_{-\infty}^{\infty}g(x)f_X(x)\,dx \qquad\qquad E[g(X)]=\sum_x g(x)f(x)$$
+
+This saves enormous effort. Without it, finding $E[X^2]$ would mean deriving the distribution of $X^2$ first.
+
+> The name is a joke about students using it without realising it needs proof. The proof is a change of variables — the same machinery as §15.
+
+### Variance
+
+$$\text{Var}(X)=E\big[(X-E[X])^2\big]$$
+
+The average squared distance from the mean. Squaring stops positive and negative deviations cancelling, and penalises large deviations disproportionately.
+
+Expanding gives the **computational form**:
+
+$$\text{Var}(X)=E[X^2]-\big(E[X]\big)^2$$
+
+> **Use the second to compute, the first to understand.** "Mean of the square minus square of the mean" is the phrase to remember.
+>
+> It also immediately gives $E[X^2]\ge(E[X])^2$, since variance can't be negative — which is Jensen's inequality for $g(x)=x^2$ (§17).
+
+### The rules, and which need independence
+
+| Rule | Requires |
+|---|---|
+| $E[aX+b]=aE[X]+b$ | nothing |
+| $E[X+Y]=E[X]+E[Y]$ | **nothing** |
+| $\text{Var}(a+X)=\text{Var}(X)$ | nothing |
+| $\text{Var}(aX)=a^2\text{Var}(X)$ | nothing |
+| $\text{Var}(X+Y)=\text{Var}(X)+\text{Var}(Y)$ | **zero covariance** |
+
+> ⭐ **The asymmetry is the single most useful thing in this section.** Expectation is linear unconditionally — $E[X+Y]=E[X]+E[Y]$ holds even for wildly dependent variables. Variance is not. Whenever you split a variance across a sum, you owe a justification.
+
+**Why $\text{Var}(a+X)=\text{Var}(X)$:** variance measures spread about the mean, and shifting moves the data and the mean together. Formally, $E[a+X]=a+E[X]$, so the deviation $(a+X)-E[a+X]=X-E[X]$ is unchanged.
+
+**Why the $a^2$:** variance is in squared units. Doubling the data quadruples the squared deviations. It's also why the standard deviation $\sigma=\sqrt{\text{Var}}$ is often preferred — it scales linearly and shares units with $X$.
+
+**Zero variance means constant.** If $P(X=c)=1$ then $E[X]=c$ and $(X-E[X])^2=0$ with probability one, so $\text{Var}(X)=0$. The converse also holds: zero variance forces $X$ to be constant almost surely.
+
+---
+
+## 12. Sample moments
+
+### The distinction that matters
+
+| | |
+|---|---|
+| $\mu$, $\sigma^2$ | **population** quantities — fixed, usually unknown |
+| $\bar X_n$, $S_n^2$ | **sample** quantities — computed from data, and themselves **random variables** |
+
+> In reality we observe finite samples. The sample mean is a random variable *because a different sample would give a different value*. That's what makes it meaningful to ask for its expectation and variance.
+
+$$\bar X_n=\frac1n\sum_{i=1}^n X_i \qquad\qquad S_n^2=\frac{1}{n-1}\sum_{i=1}^n(X_i-\bar X)^2$$
+
+> ⚠️ **The divisor is $n-1$, not $n$** — Bessel's correction. Intuition: you've already used the data once to estimate $\bar X$, which pulls the deviations artificially small. Dividing by $n-1$ compensates and makes $S_n^2$ unbiased for $\sigma^2$.
+
+### The two key results
+
+For an **i.i.d.** sample of size $n$ with $E[X_i]=\mu$ and $V[X_i]=\sigma^2$ — *i.i.d.* meaning **independent and identically distributed**:
+
+**Mean of the sample mean.**
+
+$$E[\bar X_n]=E\!\left[\frac1n\sum_{i=1}^n X_i\right]=\frac1n E\!\left[\sum_{i=1}^n X_i\right]=\frac1n\sum_{i=1}^n E[X_i]=\frac1n\cdot n\mu=\mu$$
+
+The constant comes out and the sum splits because **expectation is a linear operator**. No independence used.
+
+**Variance of the sample mean.**
+
+$$V[\bar X_n]=V\!\left[\frac1n\sum_{i=1}^n X_i\right]=\frac{1}{n^2}V\!\left(\sum_{i=1}^n X_i\right)=\frac{1}{n^2}\sum_{i=1}^n V[X_i]=\frac{1}{n^2}\cdot n\sigma^2=\frac{\sigma^2}{n}$$
+
+Two distinct justifications here, and being able to name them is worth marks:
+
+- $\tfrac1n$ comes out as $\tfrac1{n^2}$ — because $V(aX)=a^2V(X)$
+- the sum splits — **because we have independence**
+
+> ⭐ **The sample mean is unbiased, and its variance shrinks like $\sigma^2/n$.**
+>
+> The **standard error** $\sigma/\sqrt n$ falls with the *square root* of $n$: to halve your uncertainty you need **four times** the data. That diminishing return is a fact about estimation, not a limitation of any particular method.
+>
+> These two results are the seeds of the Law of Large Numbers ($V\to0$, so $\bar X_n$ concentrates on $\mu$) and the Central Limit Theorem (the *shape* of that concentration).
+
+---
+
+## 13. Covariance and correlation
+
+### Covariance
+
+$$\text{Cov}(X,Y)=E\big[(X-E[X])(Y-E[Y])\big]=E[XY]-E[X]E[Y]$$
+
+It measures whether $X$ and $Y$ deviate from their means **together**. When both are above (or both below) their means, the product is positive; when they move oppositely, negative.
+
+Note $\text{Cov}(X,X)=\text{Var}(X)$ — variance is the self-covariance.
+
+### ⭐ Independence and zero covariance
+
+If $X\perp\!\!\!\perp Y$ then $E[XY]=E[X]E[Y]$, so
+
+$$X\perp\!\!\!\perp Y \ \Longrightarrow\ \text{Cov}(X,Y)=0$$
+
+**But the converse fails:**
+
+$$\text{Cov}(X,Y)=0 \ \not\Longrightarrow\ X\perp\!\!\!\perp Y$$
+
+> ⭐ **Covariance detects only *linear* association.** A variable can determine another completely — a perfect, deterministic relationship — while having zero covariance, provided the relationship is symmetric about the mean.
+>
+> Sketch of why: if $Y$ is a symmetric function of $X$ about $E[X]$, then above-mean and below-mean deviations in $X$ produce the *same* deviation in $Y$, and the positive and negative products cancel exactly. Zero covariance, total dependence.
+>
+> This is one of the most examined one-way implications in probability. **Uncorrelated is strictly weaker than independent.** (The exception: for *jointly Gaussian* variables the two coincide — zero covariance does imply independence. That's special to the normal.)
+
+### Rules
+
+$$\text{Cov}(aX,\ bY+Z)=ab\,\text{Cov}(X,Y)+a\,\text{Cov}(X,Z)$$
+
+Covariance is **bilinear** — linear in each argument separately.
+
+$$\text{Var}(X+Y)=\text{Var}(X)+\text{Var}(Y)+2\,\text{Cov}(X,Y)$$
+$$\text{Var}(X-Y)=\text{Var}(X)+\text{Var}(Y)-2\,\text{Cov}(X,Y)$$
+
+and when $X\perp\!\!\!\perp Y$ the covariance term vanishes, giving
+
+$$\text{Var}(X+Y)=\text{Var}(X-Y)=\text{Var}(X)+\text{Var}(Y)$$
+
+> ⭐ **Note that $\text{Var}(X-Y)$ *adds* the variances.** Subtracting two independent random variables does not cancel uncertainty — it compounds it. The difference of two noisy measurements is noisier than either.
+
+### ⭐ Why correlation exists
+
+Covariance has a serious defect: **it depends on units.**
+
+Let $X_m$ be a measurement in metres and $X_{cm}$ the same quantity in centimetres, so $X_{cm}=100\,X_m$. Then for any $Y$:
+
+$$\text{Cov}(X_{cm},Y)=100\,\text{Cov}(X_m,Y)$$
+
+**Identical relationship, hundredfold different number.** A covariance of 4.7 is meaningless without knowing the units — you can't tell whether that's strong or weak.
+
+The fix is to normalise by the scales of both variables:
+
+$$\rho=\text{corr}(X,Y)=\frac{\text{Cov}(X,Y)}{\sqrt{V(X)\,V(Y)}}=\frac{\text{Cov}(X,Y)}{\sigma_X\,\sigma_Y} \ \in[-1,1]$$
+
+Now the units cancel. $\rho$ is dimensionless and comparable across problems.
+
+```
+   y│  ·  ·╱·      y│ ╲· ·  ·     y│ ·  · ·
+    │ · ╱· ·        │· ╲· ·        │ · ·  ·
+    │·╱ ·  ·        │ · ·╲·        │·  · ·
+    └────────→ x    └────────→ x   └────────→ x
+       ρ > 0           ρ < 0          ρ ≈ 0
+```
+
+> The bound $\rho\in[-1,1]$ is **Cauchy–Schwarz** (§17) in disguise — exactly as $\cos\theta\in[-1,1]$ was in linear algebra. Correlation *is* the cosine of the angle between the centred variables, which is why the two subjects keep converging.
+
+### The covariance matrix
+
+For a random vector $X\in\mathbb{R}^D$:
+
+$$\text{Cov}(X,X)=E[XX^\top]-E[X]E[X]^\top \ \in \mathbb{R}^{D\times D}$$
+
+$$\Sigma=\begin{bmatrix}\text{Var}(X_1)&\text{Cov}(X_1,X_2)&\cdots&\text{Cov}(X_1,X_D)\\ \text{Cov}(X_2,X_1)&\text{Var}(X_2)& &\vdots\\ \vdots& &\ddots& \\ \text{Cov}(X_D,X_1)&\cdots& &\text{Var}(X_D)\end{bmatrix}$$
+
+**Variances on the diagonal, covariances off it.**
+
+**$\Sigma$ is symmetric**, because $\text{Cov}(X_i,X_j)=\text{Cov}(X_j,X_i)$. It's also positive semidefinite — so everything from linear algebra §A12 applies: real eigenvalues, orthogonal eigenvectors, never defective. **That's exactly why PCA works**, and why it never encounters a defective matrix.
+
+For $A\in\mathbb{R}^{D\times D}$ and $b\in\mathbb{R}^{D\times1}$:
+
+$$V[AX+b]=A\,V(X)\,A^\top$$
+
+> The matrix version of $\text{Var}(aX+b)=a^2\text{Var}(X)$. The $b$ vanishes (shifts don't affect spread); the $A$ appears **twice**, once on each side, which is the matrix analogue of squaring.
+
+---
+
+## 14. Conditional expectation and variance
+
+### Conditional expectation
+
+$$E[X\mid Y=y]=\int_{-\infty}^{\infty}x\,f_{X\mid Y}(x\mid y)\,dx, \qquad\text{where } f_{X\mid Y}(x\mid y)=\frac{f_{X,Y}(x,y)}{f_Y(y)}$$
+
+The ordinary definition of expectation, computed against the conditional density.
+
+> ⚠️ **A distinction worth being pedantic about:**
+>
+> - $E[X\mid Y=y]$ is a **number** — the mean of $X$ among cases where $Y$ took the value $y$
+> - $E[X\mid Y]$ is a **random variable** — a function of $Y$, taking the value $E[X\mid Y=y]$ when $Y=y$
+>
+> Only the second can itself be averaged or have a variance, which is what the two laws below do.
+
+**Under independence**, the conditional density collapses:
+
+$$f_{X\mid Y}(x\mid y)=\frac{f_X(x)f_Y(y)}{f_Y(y)}=f_X(x) \ \Longrightarrow\ E[X\mid Y]=E[X]$$
+
+Conditioning on something irrelevant changes nothing — consistent with §5.
+
+### Conditional variance
+
+$$V(X\mid Y=y)=E\big[(X-E[X\mid Y=y])^2\ \big|\ Y=y\big]$$
+
+The variance computed inside the subpopulation where $Y=y$.
+
+### ⭐ The two laws
+
+**Tower property** (law of total expectation, law of iterated expectations):
+
+$$E\big[E[X\mid Y]\big]=E[X]$$
+
+*Average the group means, weighted by group size, and you recover the overall mean.* Averaging in stages gives the same answer as averaging all at once.
+
+**Law of total variance:**
+
+$$V(Y)=E\big[V(Y\mid X)\big]+V\big[E(Y\mid X)\big]$$
+
+Read it as a decomposition:
+
+| Term | Meaning |
+|---|---|
+| $E[V(Y\mid X)]$ | average **within-group** variance — spread remaining after you know $X$ |
+| $V[E(Y\mid X)]$ | variance **between group means** — spread explained by $X$ |
+
+> ⭐ **Total variance = unexplained + explained.** This is precisely the ANOVA decomposition, and the same structure as $\|y\|^2=\|\hat y\|^2+\|r\|^2$ in least squares. Both terms are non-negative, so knowing $X$ can only reduce the average leftover variance.
+
+### When to reach for these
+
+Whenever a problem has a **two-stage structure**:
+
+- "first draw $N$, then sum $N$ things"
+- "first pick a group, then sample within it"
+- "$Y\sim$ something, and *given* $Y=y$, $X\sim$ something else"
+
+**Condition on the first stage.** Compute $E[\cdot\mid \text{stage 1}]$ and $V(\cdot\mid\text{stage 1})$, which are usually easy, then apply the two laws to get back to the unconditional answer.
+
+The law of total variance is especially informative here because it separates the two sources of randomness — variability *within* each scenario, and variability *across* scenarios.
+
+---
+
+## 15. Transformations of random variables
+
+### The univariate case
+
+Let $X$ have states $x\in[a,b]$ and let $U$ be **invertible**. Set $Y=U(X)$. Assume first that $U$ is **strictly increasing**.
+
+Start from the CDF, because that's where the logic is clean:
+
+$$F_Y(y)=P(Y\le y)=P\big(U(X)\le y\big)=P\big(X\le U^{-1}(y)\big)=F_X\big(U^{-1}(y)\big)=\int_a^{U^{-1}(y)}f_X(x)\,dx$$
+
+The key step is applying $U^{-1}$ to both sides inside the probability — legitimate, and **direction-preserving**, because $U$ is increasing.
+
+Now differentiate to get the density. The variable appears in the **limit of integration**, so this is a Leibniz-rule problem:
+
+$$f_Y(y)=\frac{d}{dy}F_Y(y)=\frac{d}{dy}\int_a^{U^{-1}(y)}f_X(x)\,dx=f_X\big(U^{-1}(y)\big)\cdot\frac{d}{dy}U^{-1}(y)$$
+
+> **Leibniz rule** — given, not to be memorised, but you'll use it repeatedly. If $f$ and $\tfrac{df}{dy}$ are continuous and $a(y),b(y)$ are differentiable:
+> $$\frac{d}{dy}\int_{a(y)}^{b(y)}f(x,y)\,dx=f\big(b(y),y\big)b'(y)-f\big(a(y),y\big)a'(y)+\int_{a(y)}^{b(y)}\frac{\partial}{\partial y}f(x,y)\,dx$$
+> Here only the upper limit depends on $y$ and the integrand doesn't, so only the first term survives.
+
+### Why the absolute value
+
+Repeat the derivation with $U$ strictly **decreasing**. Applying $U^{-1}$ now **flips** the inequality, and you end up with
+
+$$f_Y(y)=\ominus\,f_X\big(U^{-1}(y)\big)\cdot\underbrace{\frac{d}{dy}U^{-1}(y)}_{<0}$$
+
+The derivative of a decreasing inverse is negative, and the sign flip compensates. To cover **both** cases in one formula:
+
+$$\boxed{f_Y(y)=f_X\big(U^{-1}(y)\big)\cdot\left\lvert\frac{d}{dy}U^{-1}(y)\right\rvert}$$
+
+> ⚠️ **The absolute value is load-bearing.** Omit it and a decreasing transformation returns a negative "density" — which should be your signal that something's wrong.
+>
+> The intuition: $\lvert\tfrac{d}{dy}U^{-1}\rvert$ is a **stretching factor**. If the transformation compresses a region, the density there must increase to conserve total probability. Direction of travel is irrelevant to that bookkeeping, which is why only the magnitude matters.
+
+### The multivariate case
+
+> **Theorem.** Let $f_X(x)$ be the PDF of a multivariate random variable with domain $x$. If $y=U(x)$ is **differentiable and invertible** for all values of $x$, then the PDF of $y=U(x)$ is
+> $$f_Y(y)=\underbrace{f_X\big(U^{-1}(y)\big)}_{\text{(a)}}\cdot\underbrace{\left\lvert\det\!\left(\frac{d}{dy}U^{-1}(y)\right)\right\rvert}_{\text{(b)}}$$
+
+The same formula, with $\lvert\det(\text{Jacobian of the inverse})\rvert$ replacing the scalar $\lvert\cdot\rvert$.
+
+That's exactly right conceptually: from linear algebra §A10, **the determinant is the volume-scaling factor** of a transformation. In one dimension "volume" is length and the determinant is just the derivative. The multivariate formula is the honest generalisation, not a new idea.
+
+**The working method is always two-part:**
+
+| | |
+|---|---|
+| **(a)** | Solve $y=U(x)$ for $x$ to get $U^{-1}(y)$, substitute into $f_X$ |
+| **(b)** | Differentiate $U^{-1}$, take $\lvert\det\rvert$ |
+
+Then multiply.
+
+---
+
+## 16. The multivariate normal
+
+### Random vectors
+
+Let $X=[X_1\ \cdots\ X_N]^\top$ where each $X_i$ is a random variable. Then $X$ is a **random vector**, and its distribution is **multivariate**.
+
+$$X\sim N(\mu,\Sigma), \qquad \mu\in\mathbb{R}^{n\times1}, \quad \Sigma\in\mathbb{R}^{n\times n}$$
+
+$$f_X(x)=(2\pi)^{-n/2}\,\lvert\Sigma\rvert^{-1/2}\exp\!\left\{-\tfrac12(x-\mu)^\top\Sigma^{-1}(x-\mu)\right\}$$
+
+Compare with the univariate density: $\sigma^2$ has become the matrix $\Sigma$, division has become $\Sigma^{-1}$, and the square $(x-\mu)^2$ has become the quadratic form $(x-\mu)^\top\Sigma^{-1}(x-\mu)$. **It's the same formula written in matrix language.**
+
+The quadratic form is exactly the object from linear algebra §A12 — and it's positive because $\Sigma^{-1}$ is positive definite, which is what makes the exponential decay in every direction.
+
+| | |
+|---|---|
+| $X_1,\dots,X_n$ **independent** | $\Sigma$ is **diagonal** — zero off-diagonal covariances |
+| $Z\sim N(0,I_n)$ | the **standard** MVN; important for MLE |
+| **Linear maps preserve normality** | $X\sim N(\mu,\Sigma) \Rightarrow AX+b\sim N\big(A\mu+b,\ A\Sigma A^\top\big)$ |
+
+> That last property is remarkable and rare. Apply any affine transformation to a Gaussian and you get another Gaussian — no other family behaves so well, and it's much of why the normal dominates statistics.
+>
+> The mean transforms as $A\mu+b$ (linearity of expectation) and the covariance as $A\Sigma A^\top$ (the rule from §13). **Note that for jointly Gaussian variables, zero covariance *does* imply independence** — the one case where the §13 warning doesn't bite.
+
+### ⭐ Deriving the MVN from a standard normal
+
+Worth following once, because it ties together transformations, determinants and covariance.
+
+**Setup.** Take $X$ with the standard bivariate normal density
+
+$$f\!\left(\begin{bmatrix}x_1\\x_2\end{bmatrix}\right)=\frac{1}{2\pi}\exp\!\left(-\tfrac12\begin{bmatrix}x_1\\x_2\end{bmatrix}^\top\begin{bmatrix}x_1\\x_2\end{bmatrix}\right)=\frac{1}{2\pi}\exp\!\left(-\tfrac12 x^\top x\right)$$
+
+and let $A=\begin{bmatrix}a&b\\c&d\end{bmatrix}$ be invertible, $b=\begin{bmatrix}b_1\\b_2\end{bmatrix}$. Find the PDF of $y=b+Ax$.
+
+**(a) Invert the transformation.**
+
+$$U(x)=y=b+Ax \ \Rightarrow\ y-b=Ax \ \Rightarrow\ x=A^{-1}(y-b)$$
+
+recalling $A^{-1}=\dfrac{1}{ad-bc}\begin{bmatrix}d&-b\\-c&a\end{bmatrix}$. Substituting:
+
+$$f_X\big(U^{-1}(y)\big)=\frac{1}{2\pi}\exp\!\left(-\tfrac12(y-b)^\top A^{-\top}A^{-1}(y-b)\right)$$
+
+**(b) The Jacobian.**
+
+$$\frac{d}{dy}U^{-1}(y)=\frac{d}{dy}A^{-1}(y-b)=A^{-1} \qquad\Longrightarrow\qquad \left\lvert\det(A^{-1})\right\rvert=\frac{1}{\lvert\det A\rvert}=\frac{1}{\lvert ad-bc\rvert}$$
+
+*(The inverse of an affine map is affine, so its Jacobian is the constant matrix $A^{-1}$.)*
+
+**Combine, then recognise the pattern.** Set $\Sigma=AA^\top$. Two identities do the work:
+
+$$(A^{-1})^\top A^{-1}=(AA^\top)^{-1}=\Sigma^{-1}, \qquad \det(AA^\top)=\det(A)^2$$
+
+The first turns the exponent into $-\tfrac12(y-b)^\top\Sigma^{-1}(y-b)$; the second turns $\tfrac{1}{\lvert\det A\rvert}$ into $\lvert\det\Sigma\rvert^{-1/2}$. So
+
+$$f_Y(y)=(2\pi)^{-2/2}\,\lvert\det\Sigma\rvert^{-1/2}\exp\!\left(-\tfrac12(y-b)^\top\Sigma^{-1}(y-b)\right)$$
+
+which is exactly the MVN density with mean $b$ and covariance $\Sigma$. Confirming the general rule:
+
+$$X\sim N\!\left(\begin{bmatrix}0\\0\end{bmatrix},\begin{bmatrix}1&0\\0&1\end{bmatrix}\right) \ \Longrightarrow\ Y=b+AX\sim N\big(b,\ AIA^\top\big)=N(b,\Sigma)$$
+
+> ⭐ **Every multivariate normal is an affine map of a standard one.** That's not just theory — it's the sampling algorithm. To draw from $N(\mu,\Sigma)$: draw $Z\sim N(0,I)$, return $\mu+LZ$ where $LL^\top=\Sigma$. That $L$ is the **Cholesky factor** from linear algebra §A13, which is why Cholesky needs the matrix to be positive definite: it has to be a valid covariance matrix.
+
+---
+
+## 17. Inequalities of expectations
+
+Inequalities matter because exact distributions are often unavailable. These give guarantees that hold regardless.
+
+### Cauchy–Schwarz
+
+If $X$ and $Y$ have finite variances:
+
+$$E\big[\lvert XY\rvert\big]\le\sqrt{E[X^2]\,E[Y^2]}$$
+
+The probabilistic twin of the vector inequality $\lvert\langle x,y\rangle\rvert\le\|x\|\|y\|$ — genuinely the same theorem. Random variables with finite variance form an inner product space under $\langle X,Y\rangle=E[XY]$, and this is Cauchy–Schwarz in that space.
+
+Applied to centred variables it gives $\lvert\text{Cov}(X,Y)\rvert\le\sigma_X\sigma_Y$, which is precisely why $\rho\in[-1,1]$.
+
+### ⭐ Jensen's inequality
+
+$$g \text{ \textbf{convex}} \ \Longrightarrow\ E[g(X)]\ \ge\ g\big(E[X]\big)$$
+$$g \text{ \textbf{concave}} \ \Longrightarrow\ E[g(X)]\ \le\ g\big(E[X]\big)$$
+
+```
+        CONVEX                          CONCAVE
+   E[g(X)] ●                      g(E[X]) ●━━━━━━━
+            ╲                          ╱          ╲
+             ╲______╱          E[g(X)] ●           ╲
+   g(E[X]) ●                                        ╲
+        E(X)                          E(X)
+```
+
+**Reading the picture.** Take two points on a convex curve and join them by a chord. The chord lies **above** the curve (§4 of the calculus guide). $E[g(X)]$ is a weighted average of heights *on the curve* — which sits on the chord — while $g(E[X])$ is the height of the curve at the averaged $x$. The chord is higher.
+
+> ⭐ **Averaging then mapping is not the same as mapping then averaging**, and convexity tells you which is larger.
+>
+> **Mnemonic: convex ⟹ the average of the function exceeds the function of the average.** If you can't recall the direction, test $g(x)=x^2$: Jensen says $E[X^2]\ge(E[X])^2$, which rearranges to $\text{Var}(X)\ge0$. Always true, so the direction is right.
+
+Equality holds iff $g$ is linear on the range of $X$, or $X$ is degenerate. The gap is a measure of how spread out $X$ is relative to the curvature of $g$.
+
+**Where it bites:** $g(x)=e^x$ is convex, so $E[e^X]\ge e^{E[X]}$ — exponentiating an average understates the average of the exponentials. Anyone converting log-scale results back to levels has met this, usually unknowingly.
+
+### Chebyshev's inequality
+
+$$P\big(\lvert X-\mu\rvert\ge k\sigma\big)\le\frac{1}{k^2}$$
+
+**Distribution-free** — no normality, no assumptions beyond a finite variance.
+
+For $k=2$, the complement gives
+
+$$P\big(\lvert X-\mu\rvert<2\sigma\big)\ge1-\tfrac14=0.75$$
+
+**At least 75% of the probability lies within two standard deviations of the mean, whatever the distribution.**
+
+> The bound is deliberately loose — for a normal the true figure is about 95%. That's the trade: Chebyshev gives you *something* when you know nothing about the shape. Its real importance is as the engine of the **weak law of large numbers**: apply it to $\bar X_n$, whose variance is $\sigma^2/n$ (§12), and the bound tends to zero.
+
+---
+
+*⬜ Generating functions and convergence / LLN / CLT to follow.*
+
+*Companion to `src/exam-sheet-probstats.md`. Regenerate with `python3 cheatsheet/build.py`.*
+</script>
+<script src="../vendor/marked.min.js"></script>
+<script src="../vendor/katex.min.js"></script>
+<script src="../vendor/auto-render.min.js"></script>
+<script>
+  var raw = document.getElementById('source').textContent;
+
+  // Shield math from the markdown parser: underscores and asterisks inside
+  // formulas would be eaten as emphasis, and \| inside a table cell would be
+  // read as a column delimiter.
+  var stash = [];
+  function shield(match) {
+    stash.push(match);
+    return 'ZMATHZ' + (stash.length - 1) + 'ZENDZ';
+  }
+  raw = raw.replace(/\$\$[\s\S]+?\$\$/g, shield);
+  raw = raw.replace(/\$[^$\n]+?\$/g, shield);
+
+  var html = marked.parse(raw);
+
+  // Escape on restore: this string goes through innerHTML, so a "<" or ">"
+  // inside a formula would otherwise be parsed as an HTML tag and eaten.
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  html = html.replace(/ZMATHZ(\d+)ZENDZ/g, function (_, i) { return escapeHtml(stash[+i]); });
+
+  var target = document.getElementById('content');
+  target.innerHTML = html;
+
+  renderMathInElement(target, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false }
+    ],
+    throwOnError: false
+  });
+</script>
+</body>
+</html>

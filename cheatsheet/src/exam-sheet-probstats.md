@@ -1,0 +1,639 @@
+---
+title: Exam Sheet — Probability & Statistics
+profile: exam
+---
+
+# Exam Reference — Probability & Statistics
+
+*Brush-Up in Mathematics, Probability & Statistics · BSE 2026 · Wielath · refs: Wasserman ch. 1–5, Deisenroth ch. 6*
+
+> **PART P — PROBABILITY** · **P1** Set Theory · **P2** Probability Space · **P3** Combinatorics · **P4** Independence · **P5** Conditional Probability · **P6** Chain Rule / LTP / Bayes · **P7** Random Variables · **P8** Distribution Catalogue · **P9** Expectation & Variance · **P10** Sample Moments · **P11** Covariance & Correlation · **P12** Conditional Expectation & Variance · **P13** Transformations · **P14** Multivariate Normal · **P15** Inequalities
+>
+> ⬜ *To come:* generating functions · convergence / LLN / CLT · Gamma, Beta, Dirichlet · Part S (statistics)
+>
+> ⭐ = high-frequency · ⚠️ = common error
+
+---
+
+## P0. Notation
+
+| Symbol | Meaning | | Symbol | Meaning |
+|---|---|---|---|---|
+| $\Omega$ | sample space — all possible outcomes | | $A^c$ | complement, $\Omega\setminus A$ |
+| $\omega$ | a single outcome, $\omega\in\Omega$ | | $A\setminus B$ | $A\cap B^c$ |
+| $A, B, C$ | **events** — subsets of $\Omega$ | | $\lvert A\rvert$ | cardinality (number of elements) |
+| $P(A)$ | probability of $A$ | | $\mathbb{1}_A$ | indicator function |
+| $P(A,B)$ | $=P(A\cap B)$, joint probability | | $\varnothing$ | empty set |
+| $P(A\mid B)$ | conditional probability | | $A\perp\!\!\!\perp B$ | independent |
+| $2^A$ | power set of $A$ | | $A\perp\!\!\!\perp B\mid C$ | conditionally independent |
+
+> ⚠️ $P(A,B)$ and $P(A\cap B)$ and $P(AB)$ all mean the same thing. **$P(A\mid B)$ is different** — don't let the comma and the bar blur.
+
+---
+
+## P1. Set theory
+
+| | |
+|---|---|
+| **Union** | $A\cup B=\{u : u\in A \text{ or } u\in B\}$ |
+| **Intersection** | $A\cap B=\{u : u\in A \text{ and } u\in B\}$ |
+| **Complement** | $A^c=\{u\in M : u\notin A\}$ |
+| **Relative complement** (set difference) | $A\setminus B=\{u : u\in A,\ u\notin B\}=A\cap B^c$ |
+| **Power set** | $2^A$ = all subsets, incl. $\varnothing$ and $A$; $\lvert 2^A\rvert=2^{\lvert A\rvert}$ |
+
+**De Morgan** — the two to memorise:
+
+$$(A\cup B)^c=A^c\cap B^c \qquad\qquad (A\cap B)^c=A^c\cup B^c$$
+
+Generalised: $\ \left(\bigcup_i A_i\right)^c=\bigcap_i A_i^c$, $\ \left(\bigcap_i A_i\right)^c=\bigcup_i A_i^c$
+
+**Pairwise disjoint** (mutually exclusive): $\ A_i\cap A_j=\varnothing$ whenever $i\neq j$
+
+**Partition** of $M$: a sequence of disjoint sets with $\ \bigcup_{i\in I}A_i=M$
+
+```
+ ┌──────┬──────┬──────┐   A partition covers everything
+ │  A₁  │  A₂  │  A₃  │   with no overlaps.
+ └──────┴──────┴──────┘
+```
+
+**Indicator function**
+
+$$\mathbb{1}_A(s)=\begin{cases}1 & \text{if } s\in A\\ 0 & \text{if } s\notin A\end{cases}$$
+
+---
+
+## P2. Probability space
+
+**Sample space** $\Omega$ = set of possible outcomes of an experiment. **Subsets of $\Omega$ are events.**
+
+$$\text{Toss a coin twice:} \quad \Omega=\{HH,\ HT,\ TH,\ TT\}, \qquad \text{event "first toss heads"}=\{HH,\ HT\}$$
+
+### ⭐ The three axioms
+
+A function $P$ assigning a real number $P(A)$ to each event is a **probability distribution / measure** if:
+
+| | |
+|---|---|
+| **Axiom 1** | $P(A)\ge0$ for every $A$ |
+| **Axiom 2** | $P(\Omega)=1$ |
+| **Axiom 3** | $A_1,A_2,\dots$ pairwise disjoint $\Rightarrow P\left(\bigcup_{i\in I}A_i\right)=\sum_{i\in I}P(A_i)$ |
+
+Axiom 3 is **countable additivity** and is the one that does the work.
+
+### Derived properties
+
+$$P(\varnothing)=0 \qquad 0\le P(A)\le1 \qquad A\subseteq B\Rightarrow P(A)\le P(B) \qquad P(A^c)=1-P(A)$$
+
+### ⭐ Inclusion–exclusion
+
+$$P(A\cup B)=P(A)+P(B)-P(A\cap B)$$
+
+If $A,B$ **disjoint**: $\ P(A\cup B)=P(A)+P(B)$ — the subtraction term vanishes.
+
+> ⚠️ Only drop the $-P(A\cap B)$ when you *know* the events are disjoint. Adding probabilities of overlapping events double-counts.
+
+### What "$A$ has occurred" means
+
+An experiment produces a **single** outcome $\omega\in\Omega$. Then $P(A)$ is $P(\omega\in A)$.
+
+If $A\subseteq B$ then $\omega\in A\Rightarrow\omega\in B$, but **not** conversely. *(Die: $A=\{2\}$, $B=\{2,4,6\}$ — rolling a 2 means $B$ occurred; $B$ occurring doesn't mean $A$ did.)*
+
+---
+
+## P3. Combinatorics (counting)
+
+If $\Omega=\{\omega_1,\dots,\omega_n\}$ and **each outcome is equally likely**:
+
+$$\boxed{P(A)=\frac{\lvert A\rvert}{\lvert\Omega\rvert}}$$
+
+> ⚠️ **Equally likely is a hypothesis, not a default.** This formula is wrong for a loaded die.
+
+| | |
+|---|---|
+| $n$ objects can be **ordered** in | $n!=n(n-1)(n-2)\cdots3\cdot2\cdot1$ ways |
+| $k$ objects can be **chosen** from $n$ in | $\dbinom nk=\dfrac{n!}{k!(n-k)!}$ ways |
+
+$$0!=1!=1 \qquad \binom n0=\binom nn=1 \qquad \binom nk=\binom n{n-k}$$
+
+**Worked:** select 3 students from a class of 20:
+
+$$\binom{20}{3}=\frac{20!}{3!\,17!}=\frac{20\times19\times18}{3\times2\times1}=1140$$
+
+> **Cancel before multiplying.** $20!$ is astronomically large; $\frac{20\times19\times18}{6}$ is arithmetic you can do by hand.
+
+**Ordered vs unordered:** use $n!$ (or permutations) when order matters, $\binom nk$ when it doesn't.
+
+---
+
+## P4. Independence
+
+$$\boxed{A\perp\!\!\!\perp B \iff P(A,B)=P(A)\cdot P(B)} \qquad\text{where } P(A,B)=P(A\cap B)=P(AB)$$
+
+Often **assumed** in statistics; can sometimes be **verified**.
+
+**Worked** (fair die): $A=\{2,4,6\}$, $B=\{1,2,3,4\}$, so $A\cap B=\{2,4\}$
+
+$$P(A\cap B)=\tfrac26=\tfrac13 \qquad P(A)P(B)=\tfrac12\cdot\tfrac23=\tfrac13 \quad\checkmark \ \Rightarrow A\perp\!\!\!\perp B$$
+
+### ⭐⚠️ Disjoint events are NOT independent
+
+Knowing $A$ occurred tells you $B$ did **not** — that's information, so they can't be independent.
+
+$$A=\{1,3,5\},\ B=\{2,4,6\}: \quad A\cap B=\varnothing$$
+$$P(A)P(B)=\tfrac12\cdot\tfrac12=\tfrac14 \qquad\text{but}\qquad P(A\cap B)=P(\varnothing)=0$$
+$$\tfrac14\neq0 \ \Longrightarrow\ A\not\perp\!\!\!\perp B$$
+
+**The general statement:** if $P(A)>0$ and $P(B)>0$, disjoint $\Rightarrow$ not independent, and independent $\Rightarrow$ not disjoint. *(The positive-probability condition matters — see below.)*
+
+### Independence and $P(A)\in\{0,1\}$
+
+An event with probability $0$ or $1$ is independent of **everything**, including itself. Conversely, if $A$ is independent of itself then $P(A)=P(A)^2$, forcing $P(A)\in\{0,1\}$.
+
+### Complements inherit independence
+
+$$A\perp\!\!\!\perp B \ \Longrightarrow\ A^c\perp\!\!\!\perp B, \quad A\perp\!\!\!\perp B^c, \quad A^c\perp\!\!\!\perp B^c$$
+
+### Using independence in computations
+
+For "at least one" questions, **complement first**:
+
+$$P(\text{at least one head in } 10 \text{ tosses})=1-P(\text{no heads})=1-\left(\tfrac12\right)^{10}\approx0.999$$
+
+$P(T_1,\dots,T_{10})=P(T_1)\cdots P(T_{10})$ by independence — the whole point.
+
+---
+
+## P5. Conditional probability
+
+$$\boxed{P(A\mid B)=\frac{P(A,B)}{P(B)}} \qquad\text{defined only for } P(B)>0$$
+
+```
+   ┌─────────────────────┐ Ω    Conditioning on B shrinks the
+   │    ╭────╮╭────╮     │      universe to B. You're asking what
+   │    │ A  ││ B  │     │      fraction of B is also A.
+   │    ╰────╯╰────╯     │
+   └─────────────────────┘
+```
+
+### ⭐ Three notes worth memorising
+
+**1. $P(A\mid B)\neq P(B\mid A)$** — the classic error. (Sensitivity is $P(+\mid D)$; what you want after a positive test is $P(D\mid +)$.)
+
+**2. For any fixed $B$, the function $P(\cdot\mid B)$ IS a probability measure** — it satisfies Axioms 1–3. So every identity you know still applies inside the conditional world.
+
+**3. $P(B\mid\cdot)$ is NOT a probability measure** — the axioms fail when you vary the *conditioning* argument. This object is the **likelihood**.
+
+> ⚠️ That third point is subtle and examinable. **Vary the first argument → a measure. Vary the second → a likelihood.**
+
+### Independence, restated
+
+$$A\perp\!\!\!\perp B \Rightarrow P(A\mid B)=\frac{P(A)P(B)}{P(B)}=P(A)$$
+
+**Independence means conditioning on $B$ tells you nothing about $A$.**
+
+### Conditional independence
+
+$A$ and $B$ are **conditionally independent given $C$** (with $P(C)>0$) iff
+
+$$P(A,B\mid C)=P(A\mid C)\cdot P(B\mid C) \iff P(A\mid B,C)=P(A\mid C) \iff P(B\mid A,C)=P(B\mid C)$$
+
+Written $\ A\perp\!\!\!\perp B\mid C$. *Given $C$, knowing $A$ adds nothing about $B$.*
+
+### ⭐⚠️ The two implications that DON'T hold
+
+$$A\perp\!\!\!\perp B \ \not\Longrightarrow\ A\perp\!\!\!\perp B\mid C \qquad\qquad A\perp\!\!\!\perp B\mid C \ \not\Longrightarrow\ A\perp\!\!\!\perp B$$
+
+**Neither direction.** Marginal and conditional independence are logically unrelated.
+
+**Counterexample** — two fair coin flips. $A=\{1\text{st toss }H\}$, $B=\{2\text{nd toss }H\}$, $C=\{\text{at least one }H\}$:
+
+$$P(A)=P(B)=\tfrac12, \quad P(A,B)=\tfrac14=P(A)P(B) \ \Rightarrow\ A\perp\!\!\!\perp B \ \checkmark$$
+
+$$P(C)=\tfrac34, \quad P(A\mid C)=P(B\mid C)=\frac{1/2}{3/4}=\tfrac23, \quad P(A,B\mid C)=\frac{1/4}{3/4}=\tfrac13$$
+
+$$\tfrac13\neq\tfrac23\cdot\tfrac23=\tfrac49 \ \Longrightarrow\ A\not\perp\!\!\!\perp B\mid C$$
+
+> **Why:** given at least one head, learning the first toss was heads makes it *less* likely the second was too — $C$ has already used up some of the probability. Conditioning creates a dependence that wasn't there.
+
+---
+
+## P6. Chain rule, total probability, Bayes
+
+### ⭐ Product / chain rule
+
+$$P(A,B)=P(A\mid B)P(B)=P(B\mid A)P(A)$$
+
+Extends to any number of events, and **the order doesn't matter**:
+
+$$P(A,B,C)=P(A\mid B,C)\,P(B,C)=P(A\mid B,C)\,P(B\mid C)\,P(C)=P(B\mid C,A)\,P(C\mid A)\,P(A)=\cdots$$
+
+Pick whichever ordering makes the conditionals easiest to evaluate — that choice is usually the whole trick.
+
+### ⭐ Law of total probability
+
+Let $A_1,\dots,A_K$ be a **partition** of $\Omega$. Then for any $B$:
+
+$$\boxed{P(B)=\sum_{i=1}^{K}P(B\mid A_i)\,P(A_i)}$$
+
+**Why:** $B=(B\cap A_1)\cup\cdots\cup(B\cap A_K)$, a disjoint union, so by Axiom 3
+
+$$P(B)=\sum_i P(B\cap A_i)=\sum_i P(B\mid A_i)P(A_i)$$
+
+```
+ ┌──────┬──────┐ Ω    B is sliced by the partition.
+ │  A₁  │  A₂  │      Add up the slices, weighting each
+ │   ╭──┴──╮   │      conditional by how likely that
+ ├───┤  B  ├───┤      piece of the partition is.
+ │  A₃╰──┬──╯A₄ │
+ └──────┴──────┘
+```
+
+### ⭐ Bayes' theorem
+
+Let $A_1,\dots,A_K$ partition $\Omega$ with $P(A_i)>0$. If $P(B)>0$, then for each $i$:
+
+$$P(A_i\mid B)=\frac{P(A_i\cap B)}{P(B)}=\frac{P(A_i\cap B)}{\sum_{i}P(B\cap A_i)}=\boxed{\frac{P(B\mid A_i)\,P(A_i)}{\sum_{i=1}^{K}P(B\mid A_i)\,P(A_i)}}$$
+
+Two moves: **chain rule** on top, **law of total probability** on the bottom.
+
+| Term | Name |
+|---|---|
+| $P(A_i)$ | **prior** |
+| $P(B\mid A_i)$ | **likelihood** |
+| $P(A_i\mid B)$ | **posterior** |
+| denominator | **evidence** / normalising constant |
+
+### ⭐ Worked — the rare disease
+
+$D$ = has the disease, $P(D)=\tfrac1{1000}$. Test outcomes $+$ / $-$.
+
+| Given | Name |
+|---|---|
+| $P(+\mid D)=0.95$ | **sensitivity** / recall / true positive rate (TPR) |
+| $P(-\mid D)=1-0.95=0.05$ | false negative rate |
+| $P(-\mid D^c)=0.99$ | **specificity** / true negative rate (TNR) |
+| $P(+\mid D^c)=1-0.99=0.01$ | false positive rate |
+
+*Does a positive test mean a 95% chance of being sick?*
+
+$$P(D\mid+)=\frac{P(+\mid D)P(D)}{P(+\mid D)P(D)+P(+\mid D^c)P(D^c)}=\frac{0.95\times0.001}{0.95\times0.001+0.01\times0.999}=\frac{0.00095}{0.01094}\approx\mathbf{8.7\%}$$
+
+> **No.** With a rare disease, false positives from the huge healthy population swamp the true positives. $0.01\times0.999\approx0.01$ dwarfs $0.95\times0.001\approx0.00095$. **Sensitivity is not the same as the posterior** — this is the single most important intuition in the topic.
+
+### ⭐ Sequential updating — a second positive test
+
+Let $t_1,t_2$ be the first and second positive results. Chain rule on numerator and denominator:
+
+$$P(D\mid t_1,t_2)=\frac{P(t_2\mid D,t_1)\,P(D\mid t_1)}{P(t_2\mid D,t_1)P(D\mid t_1)+P(t_2\mid D^c,t_1)P(D^c\mid t_1)}$$
+
+Assuming the tests are **conditionally independent given disease status**, $P(t_2\mid D,t_1)=P(t_2\mid D)$:
+
+$$=\frac{0.95\times0.08684}{0.95\times0.08684+0.01\times(1-0.08684)}\approx\mathbf{90\%}$$
+
+> ⭐ **The posterior from step 1 becomes the prior for step 2.** That's the whole of Bayesian updating. Note also the conditional-independence assumption is doing real work — if the test has a systematic bias for a given patient, repeating it doesn't give independent evidence.
+
+---
+
+## P7. Random variables
+
+A **random variable** $X$ maps outcomes to numbers, $X:\Omega\to\mathbb{R}$. A **random vector** is $X=[X_1\ \cdots\ X_N]^\top$ where each $X_i$ is a random variable.
+
+### CDF
+
+$$F_X(x)=P(X\le x)$$
+
+| Property | |
+|---|---|
+| non-decreasing | $x_1<x_2 \Rightarrow F(x_1)\le F(x_2)$ |
+| $\lim_{x\to-\infty}F(x)=0$, $\ \lim_{x\to\infty}F(x)=1$ | |
+| **right-continuous** | $\lim_{y\to x^+}F(y)=F(x)$ |
+
+$$P(X>x)=1-F(x) \qquad P(x<X\le y)=F(y)-F(x) \qquad P(X=x)=F(x)-\lim_{y\to x^-}F(y)$$
+
+> ⭐ That last one: **$P(X=x)$ is the size of the jump** in $F$ at $x$. Continuous CDF ⟹ no jumps ⟹ $P(X=x)=0$ for every $x$.
+
+### PMF / PDF
+
+**Discrete:** $f_X(x)=P(X=x)$, with $\sum_x f_X(x)=1$
+
+**Continuous:** $f_X(x)\ge0$ with $\int_{-\infty}^{\infty}f_X(x)\,dx=1$, and $\ f_X(x)=F_X'(x)$
+
+> ⚠️ For continuous $X$, $f_X(x)$ is **not** a probability — it can exceed 1. Only areas are probabilities.
+
+**Joint CDF:** $F(x,y)=P(X\le x,\ Y\le y)$, and for a rectangle,
+
+$$P(a<X\le b,\ c<Y\le d)=F(b,d)-F(a,d)-F(b,c)+F(a,c)$$
+
+*(Inclusion–exclusion on the corners — subtract two strips, add back the doubly-subtracted corner.)*
+
+---
+
+## P8. ⭐ Distribution catalogue
+
+### Discrete
+
+| | Support | PMF | $E[X]$ | $\text{Var}(X)$ | Use |
+|---|---|---|---|---|---|
+| $\text{Bern}(p)$ | $\{0,1\}$ | $p^x(1-p)^{1-x}$ | $p$ | $p(1-p)$ | single binary outcome |
+| $\text{B}(n,p)$ | $\{0,\dots,n\}$ | $\dbinom nx p^x(1-p)^{n-x}$ | $np$ | $np(1-p)$ | successes in $n$ independent trials |
+| $\text{Pois}(\lambda)$ | $\mathbb{N}_0$ | $e^{-\lambda}\dfrac{\lambda^x}{x!}$ | $\lambda$ | $\lambda$ | counts of independent events per period |
+
+> ⚠️ **The Binomial PMF needs $\binom nx$.** Without it the PMF doesn't sum to 1. Binomial $=$ sum of $n$ independent Bernoulli trials; the coefficient counts *which* trials succeeded.
+>
+> For Poisson, **mean $=$ variance $=\lambda$** — a distinctive signature. $\lambda$ is the long-run average count per period.
+
+### Continuous
+
+| | Support | PDF | $E[X]$ | $\text{Var}(X)$ | Use |
+|---|---|---|---|---|---|
+| $\text{Unif}(a,b)$ | $[a,b]$ | $\dfrac{1}{b-a}$ | $\dfrac{a+b}{2}$ | $\dfrac{(b-a)^2}{12}$ | no preferred value |
+| $\text{Exp}(\lambda)$ | $x\ge0$ | $\lambda e^{-\lambda x}$ | $\dfrac1\lambda$ | $\dfrac1{\lambda^2}$ | **waiting time between Poisson events** |
+| $N(\mu,\sigma^2)$ | $\mathbb{R}$ | $\dfrac{1}{\sqrt{2\pi\sigma^2}}\exp\!\left(-\dfrac{(x-\mu)^2}{2\sigma^2}\right)$ | $\mu$ | $\sigma^2$ | limits of sums; noise |
+
+> ⚠️ **$\sigma^2$ is the variance; $\sigma$ is the standard deviation.** The parameter constraint is $\sigma>0$.
+>
+> $\lambda$ in $\text{Exp}(\lambda)$ is the **rate**. Mean $=1/\lambda$ — if events arrive at rate 3/hour, you wait 20 minutes on average.
+
+### Normal — standardisation
+
+$$X\sim N(\mu,\sigma^2) \Rightarrow Z=\frac{X-\mu}{\sigma}\sim N(0,1) \qquad\qquad Z\sim N(0,1) \Rightarrow X=\mu+\sigma Z\sim N(\mu,\sigma^2)$$
+
+$$E\!\left[\frac{X-\mu}{\sigma}\right]=\frac{1}{\sigma}(\mu-\mu)=0, \qquad V\!\left(\frac{X-\mu}{\sigma}\right)=\frac{1}{\sigma^2}V(X)=\frac{\sigma^2}{\sigma^2}=1$$
+
+**Standard normal:** PDF $\phi(z)$, **CDF $\Phi(z)$** — tabulated, no closed form.
+
+**Worked.** $X\sim N(3,5)$, find $P(X>1)$:
+
+$$P(X>1)=1-P(X\le1)=1-P\!\left(\frac{X-3}{\sqrt5}\le\frac{1-3}{\sqrt5}\right)=1-\Phi(-0.84)=0.81$$
+
+**Reverse (quantile).** Find $q$ with $P(X<q)=0.2$:
+
+$$P(X\le q)=\Phi\!\left(\frac{q-\mu}{\sigma}\right)=0.2 \ \Rightarrow\ \Phi(-0.84)=0.2 \ \Rightarrow\ \frac{q-3}{\sqrt5}=-0.84 \ \Rightarrow\ q=1.12$$
+
+> ⭐ **Always standardise before using the table.** Forward: value → $z$ → $\Phi$. Reverse: probability → $\Phi^{-1}$ → $z$ → value.
+
+---
+
+## P9. Expectation and variance
+
+$$E[X]=\sum_x x f_X(x) \quad\text{(discrete)} \qquad\qquad E[X]=\int_{-\infty}^{\infty}x f_X(x)\,dx \quad\text{(continuous)}$$
+
+**LOTUS** — no need to find the distribution of $g(X)$ first:
+
+$$E[g(X)]=\sum_x g(x)f_X(x) \qquad\qquad E[g(X)]=\int_{-\infty}^{\infty}g(x)f_X(x)\,dx$$
+
+### ⭐ Variance
+
+$$\text{Var}(X)=E\big[(X-E[X])^2\big]=\boxed{E[X^2]-\big(E[X]\big)^2}$$
+
+Use the second form to compute; the first to understand.
+
+| Rule | |
+|---|---|
+| $E[aX+b]=aE[X]+b$ | expectation is **linear** |
+| $E[X+Y]=E[X]+E[Y]$ | **always** — no independence needed |
+| $\text{Var}(a+X)=\text{Var}(X)$ | shifting doesn't change spread |
+| $\text{Var}(aX)=a^2\text{Var}(X)$ | note the **square** |
+| $\text{Var}(X)=0 \iff P(X=c)=1$ | zero variance ⟺ constant |
+
+> ⚠️ **Linearity of expectation needs no independence. Variance does.** $\text{Var}(X+Y)=\text{Var}(X)+\text{Var}(Y)$ only when $\text{Cov}(X,Y)=0$.
+
+---
+
+## P10. Sample moments
+
+$$\bar X_n=\frac1n\sum_{i=1}^n X_i \qquad\qquad S_n^2=\frac{1}{n-1}\sum_{i=1}^n(X_i-\bar X)^2$$
+
+> ⚠️ **$n-1$, not $n$**, in the sample variance — Bessel's correction, which makes it unbiased.
+
+### ⭐ For an i.i.d. sample with $E[X_i]=\mu$, $V[X_i]=\sigma^2$
+
+$$E[\bar X_n]=E\!\left[\frac1n\sum_{i=1}^n X_i\right]=\frac1n\sum_{i=1}^n E[X_i]=\frac{1}{n}\cdot n\mu=\boxed{\mu}$$
+
+$$V[\bar X_n]=V\!\left[\frac1n\sum_{i=1}^n X_i\right]=\frac{1}{n^2}\sum_{i=1}^n V[X_i]=\frac{1}{n^2}\cdot n\sigma^2=\boxed{\frac{\sigma^2}{n}}$$
+
+**Two different justifications, and the distinction is examinable:**
+
+| Step | Why it's allowed |
+|---|---|
+| $E$ passes through the sum | **linearity** — always true |
+| $V$ passes through the sum | **independence** — not automatic |
+| $\tfrac1n$ out of $E$ | linearity |
+| $\tfrac1{n^2}$ out of $V$ | $V(aX)=a^2V(X)$ |
+
+> ⭐ **The sample mean is unbiased, and its variance shrinks like $\sigma^2/n$.** Standard error $=\sigma/\sqrt n$ — to halve it you need **four times** the data. This is the engine behind the LLN and CLT.
+
+---
+
+## P11. Covariance and correlation
+
+$$\text{Cov}(X,Y)=E\big[(X-E[X])(Y-E[Y])\big]=\boxed{E[XY]-E[X]E[Y]}$$
+
+### ⭐ Independence vs zero covariance
+
+$$X\perp\!\!\!\perp Y \Rightarrow E[XY]=E[X]E[Y] \Rightarrow \text{Cov}(X,Y)=0$$
+
+$$\boxed{\text{but } \text{Cov}(X,Y)=0 \ \not\Longrightarrow\ X\perp\!\!\!\perp Y}$$
+
+> ⚠️ **One of the most examined one-way implications in the subject.** Covariance measures only *linear* association. A perfect non-linear relationship can have zero covariance.
+
+### Rules
+
+$$\text{Cov}(aX,\ bY+Z)=ab\,\text{Cov}(X,Y)+a\,\text{Cov}(X,Z)$$
+
+$$\text{Var}(X+Y)=\text{Var}(X)+\text{Var}(Y)+2\,\text{Cov}(X,Y)$$
+$$\text{Var}(X-Y)=\text{Var}(X)+\text{Var}(Y)-2\,\text{Cov}(X,Y)$$
+
+$$X\perp\!\!\!\perp Y: \quad \text{Var}(X+Y)=\text{Var}(X-Y)=\text{Var}(X)+\text{Var}(Y)$$
+
+> ⭐ Note $\text{Var}(X-Y)$ **adds** the variances. Subtracting random variables doesn't reduce uncertainty — it compounds it.
+
+### ⭐ Correlation — why normalise
+
+Covariance is **scale-dependent**. If $X_m$ is in metres and $X_{cm}=100X_m$:
+
+$$\text{Cov}(X_{cm},Y)=100\,\text{Cov}(X_m,Y)$$
+
+Same relationship, hundredfold different number. So normalise:
+
+$$\boxed{\rho=\text{corr}(X,Y)=\frac{\text{Cov}(X,Y)}{\sqrt{V(X)V(Y)}}=\frac{\text{Cov}(X,Y)}{\sigma_X\sigma_Y}}\ \in[-1,1]$$
+
+```
+   y│  ·  ·╱·      y│ ╲· ·  ·     y│ ·  · ·
+    │ · ╱· ·        │· ╲· ·        │ · ·  ·
+    │·╱ ·  ·        │ · ·╲·        │·  · ·
+    └────────→ x    └────────→ x   └────────→ x
+       ρ > 0           ρ < 0          ρ ≈ 0
+```
+
+### Covariance matrix (random vectors)
+
+For $X\in\mathbb{R}^D$:
+
+$$\text{Cov}(X,X)=E[XX^\top]-E[X]E[X]^\top \ \in\mathbb{R}^{D\times D}$$
+
+$$\Sigma=\begin{bmatrix}\text{Var}(X_1)&\text{Cov}(X_1,X_2)&\cdots&\text{Cov}(X_1,X_D)\\ \text{Cov}(X_2,X_1)&\text{Var}(X_2)& &\vdots\\ \vdots& &\ddots& \\ \text{Cov}(X_D,X_1)&\cdots& &\text{Var}(X_D)\end{bmatrix}$$
+
+⭐ **$\Sigma$ is symmetric** — and positive semidefinite, so everything from linear algebra §A12 applies.
+
+For $A\in\mathbb{R}^{D\times D}$, $b\in\mathbb{R}^{D\times1}$:
+
+$$\boxed{V[AX+b]=A\,V(X)\,A^\top}$$
+
+*(The $b$ drops out — shifts don't affect spread. The $A$ appears twice — the matrix analogue of $a^2$.)*
+
+---
+
+## P12. Conditional expectation and variance
+
+$$E[X\mid Y=y]=\int_{-\infty}^{\infty}x\,f_{X\mid Y}(x\mid y)\,dx, \qquad f_{X\mid Y}(x\mid y)=\frac{f_{X,Y}(x,y)}{f_Y(y)}$$
+
+> $E[X\mid Y]$ is a **random variable** — a function of $Y$. $E[X\mid Y=y]$ is a **number**. Keep them distinct.
+
+$$V(X\mid Y=y)=E\big[(X-E[X\mid Y=y])^2\ \big|\ Y=y\big]$$
+
+### ⭐ The two laws
+
+$$\textbf{Tower property / law of total expectation:}\qquad E\big[E[X\mid Y]\big]=E[X]$$
+
+$$\textbf{Law of total variance:}\qquad V(Y)=E\big[V(Y\mid X)\big]+V\big[E(Y\mid X)\big]$$
+
+> ⭐ Read the second as **"expected within-group variance + variance of the group means"**. Both terms are non-negative, so conditioning can only reduce the *average* remaining variance.
+
+**If $X\perp\!\!\!\perp Y$:** $\ E[X\mid Y]=E[X]$ — conditioning adds nothing.
+
+**Strategy:** when a problem has a random number of terms, or a two-stage structure ("first draw $Y$, then given $Y$ draw $X$"), **condition on the first stage** and apply these two laws.
+
+---
+
+## P13. Transformations of random variables
+
+### Univariate, $Y=U(X)$ with $U$ strictly increasing and invertible
+
+$$F_Y(y)=P(Y\le y)=P(U(X)\le y)=P\big(X\le U^{-1}(y)\big)=F_X\big(U^{-1}(y)\big)=\int_a^{U^{-1}(y)}f_X(x)\,dx$$
+
+Differentiate (Leibniz rule) to get the density:
+
+$$f_Y(y)=\frac{d}{dy}F_Y(y)=f_X\big(U^{-1}(y)\big)\cdot\frac{d}{dy}U^{-1}(y)$$
+
+If $U$ is strictly **decreasing**, the same derivation yields a minus sign because $\tfrac{d}{dy}U^{-1}(y)<0$. To cover both cases:
+
+$$\boxed{f_Y(y)=f_X\big(U^{-1}(y)\big)\cdot\left\lvert\frac{d}{dy}U^{-1}(y)\right\rvert}$$
+
+> ⚠️ **The absolute value is not decoration** — without it a decreasing transformation gives a negative "density".
+
+**Leibniz rule** (given, not to memorise): if $f$ and $\tfrac{df}{dy}$ are continuous and $a(y),b(y)$ differentiable,
+
+$$\frac{d}{dy}\int_{a(y)}^{b(y)}f(x,y)\,dx=f(b(y),y)\,b'(y)-f(a(y),y)\,a'(y)+\int_{a(y)}^{b(y)}\frac{\partial}{\partial y}f(x,y)\,dx$$
+
+### ⭐ Multivariate
+
+> **Theorem.** Let $f_X(x)$ be the PDF of a multivariate random variable with domain $x$. If $y=U(x)$ is differentiable and invertible for all $x$, then the PDF of $y$ is
+> $$f_Y(y)=\underbrace{f_X\big(U^{-1}(y)\big)}_{\text{(a)}}\cdot\underbrace{\left\lvert\det\!\left(\frac{d}{dy}U^{-1}(y)\right)\right\rvert}_{\text{(b)}}$$
+
+Same structure as the univariate case with $\lvert\det(\text{Jacobian})\rvert$ replacing $\lvert\cdot\rvert$ — it's the volume-scaling factor (see linear algebra §A10).
+
+**Method:** (a) invert the transformation and substitute; (b) differentiate the inverse, take $\lvert\det\rvert$; multiply.
+
+---
+
+## P14. Multivariate normal
+
+$$X=[X_1\ \cdots\ X_N]^\top \text{ is a \textbf{random vector}}, \qquad X\sim N(\mu,\Sigma), \quad \mu\in\mathbb{R}^{n\times1},\ \Sigma\in\mathbb{R}^{n\times n}$$
+
+$$f_X(x)=(2\pi)^{-n/2}\,\lvert\Sigma\rvert^{-1/2}\exp\!\left\{-\tfrac12(x-\mu)^\top\Sigma^{-1}(x-\mu)\right\}$$
+
+| | |
+|---|---|
+| $X_1,\dots,X_n$ **independent** | $\Sigma$ is **diagonal** |
+| $Z\sim N(0,I_n)$ | standard MVN — important for MLE |
+| ⭐ **Linear transformations stay normal** | $X\sim N(\mu,\Sigma) \Rightarrow AX+b\sim N(A\mu+b,\ A\Sigma A^\top)$ |
+
+### ⭐ Deriving the MVN from a standard normal
+
+Start with $X\sim N(\mathbf 0,I)$, i.e. $f(x)=\tfrac{1}{2\pi}\exp(-\tfrac12 x^\top x)$, and set $y=b+Ax$ with $A$ invertible.
+
+**(a) Invert:** $\ y-b=Ax \Rightarrow x=A^{-1}(y-b)$, so
+
+$$f_X\big(U^{-1}(y)\big)=\tfrac{1}{2\pi}\exp\!\left(-\tfrac12(y-b)^\top A^{-\top}A^{-1}(y-b)\right)$$
+
+**(b) Jacobian:** $\ \tfrac{d}{dy}A^{-1}(y-b)=A^{-1}$, so $\ \lvert\det(A^{-1})\rvert=\dfrac{1}{\lvert\det A\rvert}=\dfrac{1}{\lvert ad-bc\rvert}$
+
+**Combine**, using $\Sigma=AA^\top$, $\ (A^{-1})^\top A^{-1}=(AA^\top)^{-1}=\Sigma^{-1}$, and $\det(AA^\top)=\det(A)^2$:
+
+$$f_Y(y)=(2\pi)^{-2/2}\lvert\det\Sigma\rvert^{-1/2}\exp\!\left(-\tfrac12(y-b)^\top\Sigma^{-1}(y-b)\right)$$
+
+$$X\sim N(\mathbf 0,I) \ \Longrightarrow\ Y=b+AX\sim N(b,\ AIA^\top)=N(b,\Sigma)$$
+
+> ⭐ **Every MVN is an affine map of a standard normal.** That's how you sample one: draw $Z\sim N(0,I)$, return $\mu+LZ$ where $LL^\top=\Sigma$ — the **Cholesky factor** from linear algebra §A13.
+
+---
+
+## P15. Inequalities of expectations
+
+### Cauchy–Schwarz
+
+If $X,Y$ have finite variances:
+
+$$E\big[\lvert XY\rvert\big]\le\sqrt{E[X^2]\,E[Y^2]}$$
+
+*(The probabilistic twin of the vector inequality — same statement in the inner-product space of random variables.)*
+
+### ⭐ Jensen
+
+$$g \text{ \textbf{convex}}: \quad E[g(X)]\ \ge\ g\big(E[X]\big)$$
+$$g \text{ \textbf{concave}}: \quad E[g(X)]\ \le\ g\big(E[X]\big)$$
+
+```
+    CONVEX                        CONCAVE
+  E[g(X)] ●                      g(E[X]) ●━━━━━
+          ╲___╱                        ╱      ╲
+  g(E[X]) ●                   E[g(X)] ●        ╲
+      averaging then mapping ≠ mapping then averaging
+```
+
+> ⭐ **Mnemonic: convex ⟹ the average of the function exceeds the function of the average.** For $g(x)=x^2$ this gives $E[X^2]\ge(E[X])^2$ — which is just $\text{Var}(X)\ge0$.
+>
+> Equality holds iff $g$ is linear on the range of $X$, or $X$ is constant.
+
+### Chebyshev
+
+$$P\big(\lvert X-\mu\rvert\ge k\sigma\big)\le\frac{1}{k^2}$$
+
+Distribution-free. $k=2$ gives $P(\lvert X-\mu\rvert<2\sigma)\ge0.75$ — **at least 75% within two standard deviations, whatever the distribution.**
+
+---
+
+## Traps — Part P
+
+| Trap | Correct |
+|---|---|
+| Disjoint $\Rightarrow$ independent | **Opposite.** Disjoint (with positive probability) means *never* independent |
+| $P(A\mid B)=P(B\mid A)$ | almost never — sensitivity vs posterior |
+| $A\perp\!\!\!\perp B \Rightarrow A\perp\!\!\!\perp B\mid C$ | false, in **both** directions |
+| $P(B\mid\cdot)$ treated as a probability measure | it's the **likelihood**; only $P(\cdot\mid B)$ is a measure |
+| $P(A\cup B)=P(A)+P(B)$ | only if **disjoint**; otherwise subtract $P(A\cap B)$ |
+| $P(A)=\lvert A\rvert/\lvert\Omega\rvert$ used blindly | requires **equally likely** outcomes |
+| Forgetting $P(B)>0$ | conditional probability is undefined otherwise |
+| Law of total probability without a partition | the $A_i$ must be **disjoint and exhaustive** |
+| Sensitivity read as "chance I'm sick" | base rate dominates for rare conditions |
+| Binomial PMF without $\binom nx$ | it wouldn't sum to 1 |
+| $\sigma^2$ called the standard deviation | $\sigma^2$ = **variance**, $\sigma$ = std. dev. |
+| $\text{Cov}=0 \Rightarrow$ independent | **false** — covariance sees only *linear* association |
+| $\text{Var}(X+Y)=\text{Var}(X)+\text{Var}(Y)$ | needs $\text{Cov}=0$; otherwise add $2\,\text{Cov}(X,Y)$ |
+| $\text{Var}(X-Y)=\text{Var}(X)-\text{Var}(Y)$ | **never** — it's $+\text{Var}(Y)-2\text{Cov}$ |
+| $\text{Var}(aX)=a\,\text{Var}(X)$ | it's $a^2$ |
+| Sample variance with $\tfrac1n$ | use $\tfrac{1}{n-1}$ |
+| Using $\Phi$ without standardising | convert to $z=(x-\mu)/\sigma$ first |
+| Comparing covariances across units | scale-dependent — normalise to $\rho$ |
+| Omitting $\lvert\cdot\rvert$ in the transformation formula | decreasing maps give a negative "density" |
+| $f_X(x)$ read as a probability | densities can exceed 1; only **areas** are probabilities |
+| Confusing $E[X\mid Y]$ with $E[X\mid Y=y]$ | random variable vs number |
+| Jensen's direction guessed | **convex ⟹ $E[g(X)]\ge g(E[X])$** |
+
+---
+
+*⬜ Generating functions, convergence/LLN/CLT, and Part S (statistics) to follow.*
+
+*Built from `src/exam-sheet-probstats.md` — regenerate with `python3 cheatsheet/build.py`*
